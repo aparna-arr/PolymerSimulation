@@ -1,0 +1,75 @@
+Performing energy minimization
+Number of exceptions: 79999
+adding force  AngleForce 0
+adding force  HarmonicBondForce 1
+Add exclusions for Nonbonded force
+adding force  Nonbonded 2
+adding force  SphericalConfinement 3
+Positions... 
+ loaded!
+potential energy is 125.766573
+bl=0 (i) pos[1]=[-63.1 77.0 32.0] dr=0.45 t=0.6ps kin=26.72 pot=99.95 Rg=100.418 SPS=13 dt=57.2fs dx=66.07pm 
+bl=0 (i) pos[1]=[-63.2 77.1 32.0] dr=0.36 t=1.2ps kin=12.26 pot=88.61 Rg=100.414 SPS=50 dt=65.6fs dx=51.31pm 
+bl=0 (i) pos[1]=[-63.2 77.1 32.2] dr=0.30 t=2.0ps kin=6.75 pot=83.20 Rg=100.409 SPS=80 dt=75.1fs dx=43.58pm 
+bl=0 (i) pos[1]=[-63.5 77.4 32.7] dr=0.28 t=2.9ps kin=5.13 pot=79.59 Rg=100.402 SPS=52 dt=80.4fs dx=40.68pm 
+bl=0 (i) pos[1]=[-63.6 77.3 32.7] dr=0.27 t=3.8ps kin=4.13 pot=77.04 Rg=100.393 SPS=54 dt=86.3fs dx=39.16pm 
+Timestep decreased by 5.0
+bl=0 (i) pos[1]=[-63.8 77.0 32.6] dr=0.27 t=4.7ps kin=3.65 pot=75.21 Rg=100.384 SPS=53 dt=91.0fs dx=38.82pm 
+bl=0 (i) pos[1]=[-63.8 77.3 32.5] dr=0.26 t=5.7ps kin=3.17 pot=73.79 Rg=100.373 SPS=53 dt=94.4fs dx=37.55pm 
+bl=0 (i) pos[1]=[-63.7 77.5 32.5] dr=0.26 t=6.7ps kin=2.78 pot=72.73 Rg=100.362 SPS=52 dt=98.8fs dx=36.80pm 
+bl=0 (i) pos[1]=[-63.7 77.6 32.5] dr=0.26 t=7.7ps kin=2.50 pot=71.93 Rg=100.350 SPS=52 dt=100.3fs dx=35.40pm 
+bl=0 pos[1]=[-63.9 77.5 32.4] dr=0.26 t=8.8ps kin=2.30 pot=71.35 Rg=100.338 SPS=80 dt=103.5fs dx=35.04pm 
+Timestep decreased by 2.5
+bl=0 pos[1]=[-64.2 77.3 32.8] dr=0.25 t=9.8ps kin=2.24 pot=70.95 Rg=100.325 SPS=55 dt=110.1fs dx=36.78pm 
+bl=0 (i) pos[1]=[-64.6 77.2 33.0] dr=0.28 t=10.8ps kin=3.00 pot=70.18 Rg=100.291 SPS=54 dt=100.1fs dx=38.72pm 
+bl=0 pos[1]=[-64.5 76.9 32.9] dr=0.26 t=11.9ps kin=2.11 pot=69.80 Rg=100.278 SPS=54 dt=105.9fs dx=34.34pm 
+bl=0 (i) pos[1]=[-64.5 76.5 32.7] dr=0.28 t=13.0ps kin=2.43 pot=69.46 Rg=100.240 SPS=53 dt=105.9fs dx=36.83pm 
+bl=0 pos[1]=[-64.7 76.4 32.5] dr=0.26 t=14.1ps kin=1.93 pot=69.30 Rg=100.226 SPS=46 dt=108.9fs dx=33.82pm 
+Timestep decreased by 1.25
+bl=0 pos[1]=[-64.6 76.6 32.8] dr=0.25 t=15.2ps kin=1.82 pot=69.43 Rg=100.213 SPS=51 dt=109.4fs dx=32.97pm 
+bl=0 pos[1]=[-64.3 76.7 32.9] dr=0.25 t=16.2ps kin=2.33 pot=68.93 Rg=100.177 SPS=82 dt=100.7fs dx=34.34pm 
+bl=0 (i) pos[1]=[-64.0 76.8 33.0] dr=0.26 t=17.2ps kin=2.48 pot=68.76 Rg=100.121 SPS=54 dt=100.7fs dx=35.42pm 
+bl=0 pos[1]=[-64.0 76.7 33.2] dr=0.25 t=18.3ps kin=1.84 pot=68.77 Rg=100.107 SPS=54 dt=112.7fs dx=34.17pm 
+bl=0 pos[1]=[-63.8 76.5 33.3] dr=0.25 t=19.4ps kin=2.17 pot=68.43 Rg=100.070 SPS=54 dt=103.6fs dx=34.06pm 
+Timestep decreased by 0.625
+bl=0 pos[1]=[-63.6 76.5 33.3] dr=0.25 t=20.5ps kin=1.75 pot=68.46 Rg=100.054 SPS=54 dt=109.2fs dx=32.29pm 
+bl=0 pos[1]=[-63.4 76.4 33.2] dr=0.25 t=21.6ps kin=1.84 pot=68.36 Rg=100.015 SPS=52 dt=106.8fs dx=32.35pm 
+bl=0 pos[1]=[-63.3 76.4 33.1] dr=0.26 t=22.6ps kin=2.01 pot=68.17 Rg=99.951 SPS=52 dt=106.8fs dx=33.80pm 
+bl=0 pos[1]=[-63.2 76.4 32.9] dr=0.28 t=23.7ps kin=2.17 pot=67.97 Rg=99.863 SPS=82 dt=106.8fs dx=35.14pm 
+bl=0 pos[1]=[-63.1 76.3 32.7] dr=0.29 t=24.8ps kin=2.31 pot=67.81 Rg=99.752 SPS=55 dt=106.8fs dx=36.28pm 
+Finished energy minimization
+bl=1 (i) pos[1]=[-23.9 23.7 8.5] dr=82.87 t=231.4ps kin=2.79 pot=3.74 Rg=24.815 SPS=285 dt=105.3fs dx=39.29pm 
+bl=2 pos[1]=[-18.8 24.8 1.8] dr=3.81 t=462.5ps kin=1.52 pot=2.49 Rg=23.810 SPS=230 dt=117.4fs dx=32.32pm 
+bl=3 pos[1]=[-25.4 19.1 0.8] dr=2.58 t=697.3ps kin=1.51 pot=2.44 Rg=23.801 SPS=221 dt=117.4fs dx=32.24pm 
+bl=4 pos[1]=[-21.5 20.5 1.4] dr=2.52 t=932.1ps kin=1.50 pot=2.43 Rg=23.781 SPS=217 dt=117.4fs dx=32.17pm 
+bl=5 pos[1]=[-25.7 16.2 3.0] dr=2.53 t=1166.9ps kin=1.51 pot=2.41 Rg=23.789 SPS=214 dt=117.4fs dx=32.20pm 
+bl=6 pos[1]=[-22.7 18.8 4.3] dr=2.50 t=1401.7ps kin=1.50 pot=2.40 Rg=23.793 SPS=214 dt=117.4fs dx=32.11pm 
+bl=7 pos[1]=[-20.7 20.6 2.3] dr=2.43 t=1636.5ps kin=1.50 pot=2.39 Rg=23.794 SPS=211 dt=117.4fs dx=32.16pm 
+bl=8 pos[1]=[-23.2 22.1 5.7] dr=2.46 t=1871.3ps kin=1.51 pot=2.39 Rg=23.789 SPS=210 dt=117.4fs dx=32.26pm 
+bl=9 pos[1]=[-22.7 21.9 5.1] dr=2.47 t=2106.1ps kin=1.51 pot=2.38 Rg=23.789 SPS=209 dt=117.4fs dx=32.24pm 
+bl=10 pos[1]=[-21.5 17.8 3.8] dr=2.45 t=2340.9ps kin=1.51 pot=2.37 Rg=23.788 SPS=208 dt=117.4fs dx=32.20pm 
+
+Statistics for the simulation sim, number of particles: 80000,  number of chains: 1
+
+Statistics for particle position
+     mean position is:  [-0.00143082  0.00136535 -0.03366216]   Rg =  23.78805
+     median bond size is  0.9983122882848613
+     three shortest/longest (<10)/ bonds are  [0.83792489 0.84455371 0.84538679]    [1.14403631 1.15081051 1.15486903]
+     95 percentile of distance to center is:    30.612458298211475
+     density of closest 95% monomers is:    0.632456067605791
+     density of the core monomers is:    0.6642738516039242
+     min/median/mean/max coordinates are: 
+     x: -31.46, -0.01, -0.00, 32.14
+     y: -32.55, -0.02, 0.00, 31.71
+     z: -31.77, -0.05, -0.03, 31.62
+
+Statistics for velocities:
+     mean kinetic energy is:  1.5989066882978575 should be: 1.5
+     fastest particles are (in kT):  [11.43465994 11.83338627 12.26362493 12.31734839 12.41827762]
+
+Statistics for the system:
+     Forces are:  ['AngleForce', 'HarmonicBondForce', 'Nonbonded', 'SphericalConfinement']
+     Number of exceptions:   79999
+
+Potential Energy Ep =  2.36978106516
+0.0

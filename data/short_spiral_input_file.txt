@@ -1,0 +1,29 @@
+## don't need this line, we're inputting an already-made polymer
+## INIT_POLYMER_CONFIG	spiral # spiral, or custom from a pre-made globule file or something
+CENTER	true	# true or false
+CONFINEMENT_DENSITY	0.85 # assume sphere
+CONFINEMENT_K	1 # assume sphere
+ENERGY_MIN	10 # steps for energy min
+REPULSE_FORCE	grosberg
+STIFFNESS	4
+
+INTEGRATOR	variableLangevin
+ERROR_TOL	0.01
+THERMOSTAT	0.02
+TEMPERATURE	300 # in Kelvin
+
+INPUT_POLYMER_FILE	testpolymer_spiral.xyz
+SAVE_FILENAME	exampleTest
+PLATFORM	cuda
+
+PARTICLE_TYPE_LIST	A # comma separated list
+
+@PARTICLE	A # Specs for particle of type A
+PARTICLE_MASS	1
+# A to A bond parameters
+BOND_TYPE	A	harmonic
+WIGGLE_DIST	A	0.05
+# if there was a particle B (this is A to B and B to A)
+#BOND_TYPE	B	harmonic
+#WIGGLE_DIST	B	0.05
+@END	A
