@@ -89,10 +89,11 @@ def read_in_data(filename_list):
 def main():
 	
 	if len(sys.argv) < 2:
-		print("Usage: plot_animation.py <list_of_state_files.txt>\n", file=sys.stderr)
+		print("Usage: plot_animation.py <list_of_state_files.txt> <path/to/outfile/outfile_base_name>\n", file=sys.stderr)
 		sys.exit(1)
 
 	xyzData, minmax = read_in_data(sys.argv[1])
+	outfilename = sys.argv[2]
 	nfr = len(xyzData)
 	fps = 10 # Frame per sec
 	#print("frames is " + str(nfr))
@@ -110,19 +111,12 @@ def main():
 		sct.set_data(xyzData[ifrm]['x'], xyzData[ifrm]['y'])
 		sct.set_3d_properties(xyzData[ifrm]['z'])
 		return sct
-
 	
 	ax.set_xlim(minmax['min_x'], minmax['max_x'])
 	ax.set_ylim(minmax['min_y'], minmax['max_y'])
 	ax.set_zlim(minmax['min_z'], minmax['max_z'])
 	ani = animation.FuncAnimation(fig,updateAni,nfr, interval=50)
 
-	#ani.save(filename + '.mp4', writer='ffmpeg', fps = fps)
-	ani.save('test_animation.gif', writer='imagemagick', fps = fps)
+	ani.save(outfilename + '.gif', writer='imagemagick', fps = fps)
 	
-	fn = 'test_animation'	
-
-	#import subprocess
-	#cmd = 'magick convert %s.gif -fuzz 5%% -layers Optimize %s_r.gif'%(fn,fn)
-	#subprocess.check_output(cmd)
 main()

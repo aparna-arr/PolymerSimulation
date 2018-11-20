@@ -1,21 +1,33 @@
-## don't need this line, we're inputting an already-made polymer
-## INIT_POLYMER_CONFIG	spiral # spiral, or custom from a pre-made globule file or something
+## Energy Minimization Params ##
+ENERGY_MIN_TOL	0.3
+ENERGY_MIN_MAX_ITER	0 # run until convergence
+
+# Simulation parameters ##
+NUM_BLOCKS	50
+STEPS_PER_BLOCK	2000
+
+## Confinement ##
 CENTER	true	# true or false
 CONFINEMENT_DENSITY	0.85 # assume sphere
 CONFINEMENT_K	1 # assume sphere
-ENERGY_MIN	10 # steps for energy min
+
+## Nonbonded repulsive forces ##
 REPULSE_FORCE	grosberg
 STIFFNESS	4
+GROSBERG_TRUNC	50
 
+## Integrator params ##
 INTEGRATOR	variableLangevin
-ERROR_TOL	0.01
+ERROR_TOL	0.01 # for the integrator
 THERMOSTAT	0.02
 TEMPERATURE	300 # in Kelvin
 
-INPUT_POLYMER_FILE	testpolymer_spiral.xyz
-SAVE_FILENAME	longer_spiral_simulation/long_spiral
+## Platform and Filenames ##
+INPUT_POLYMER_FILE	../data/testpolymer_spiral.xyz
+SAVE_FILENAME	../test_dirs/Test_11_19_18/Test_11_19_18
 PLATFORM	cuda
 
+## Particle-particle interactions ##
 PARTICLE_TYPE_LIST	A # comma separated list
 
 @PARTICLE	A # Specs for particle of type A

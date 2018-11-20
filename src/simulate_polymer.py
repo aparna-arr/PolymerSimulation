@@ -76,7 +76,6 @@ def init_params():
 		'CENTER' : True,
 		'CONFINEMENT_DENSITY' : 0.85,
 		'CONFINEMENT_K' : 1,
-		'ENERGY_MIN' : 10,
 		'INTEGRATOR' : PARAM_OPTS['INTEGRATOR']['variablelangevin'],
 		'THERMOSTAT' : 0.02,
 		'TEMPERATURE' : 300,
@@ -88,7 +87,12 @@ def init_params():
 		'PARTICLE_MASS' : dict(),
 		'REPULSE_FORCE' : PARAM_OPTS['REPULSE_FORCE']['grosberg'],
 		'STIFFNESS' : 4,
-		'ERROR_TOL' : 0.01
+		'GROSBERG_TRUNC' : 50,
+		'ERROR_TOL' : 0.01,
+		'ENERGY_MIN_TOL' : 0.3,
+		'ENERGY_MIN_MAX_ITER' : 0,
+		'NUM_BLOCKS' : 50,
+		'STEPS_PER_BLOCK' : 2000
 	}
 	return params
 
@@ -159,24 +163,17 @@ def read_in_sim_specs(filename):
 				elif paramKey == "@PARTICLE":
 					blockFlag = True
 					currParticle = paramVal
-
-					#if params['PARTICLE_TYPE_LIST'] != []:
-					#	for i in range(len(params['PARTICLE_TYPE_LIST'])):
-					#		if currParticle == params['PARTICLE_TYPE_LIST'][i]:
-					#			raise InputError("Error! Two particle blocks for particle [" + currParticle + "]! Input file [" + filename + "]\n")
-					#
-					#params['PARTICLE_TYPE_LIST'].append(currParticle)
 				else:
 					raise InputError("Input [" + paramKey + "] not an option! Input file [" + filename + "]\n" )		
 					
-			elif paramKey in ["CONFINEMENT_DENSITY", "CONFINEMENT_K", "THERMOSTAT", "TEMPERATURE", "STIFFNESS", "ERROR_TOL"]:
+			elif paramKey in ["CONFINEMENT_DENSITY", "CONFINEMENT_K", "THERMOSTAT", "TEMPERATURE", "STIFFNESS", "ERROR_TOL", "ENERGY_MIN_TOL", "GROSBERG_TRUNC"]:
 				params[paramKey] = check_float(paramVal)
+			elif paramKey in ["ENERGY_MIN_MAX_ITER", "NUM_BLOCKS", "STEPS_PER_BLOCK"]:
+				params[paramKey] = check_int(paramVal)
 			elif paramKey in ["INTEGRATOR", "PLATFORM", "REPULSE_FORCE"]:
 				params[paramKey] = check_param_opt(paramKey,paramVal)
 			elif paramKey in ["INPUT_POLYMER_FILE", "SAVE_FILENAME"]:
 				params[paramKey] = paramVal
-			elif paramKey == "ENERGY_MIN":
-				params[paramKey] = check_int(paramVal)
 			elif paramKey == "PARTICLE_TYPE_LIST":
 				params[paramKey] = make_particle_list(paramVal)
 			elif paramKey == "CENTER":
@@ -256,13 +253,6 @@ def handle_input(argv):
 		raise
 	return polymer, params
 
-## output functions ##
-def output_data(filename, data):
-	pass
-
-def output_polymer_model(filename, data):
-	pass
-
 # polymer functions #
 def init_polymer(polymer, params):
 	# returns the polymer with centering, randomized (?), and masses updated
@@ -293,48 +283,56 @@ def set_polymer_in_system(polymer, simSystem):
 	for i in range(len(polymer['mass'])):
 		simSystem.addParticle(polymer['mass'][i] * 100 * amu)
 
-def set_forces_in_system(polymer, params, simSystem):
-	# adds all forces to system
-	# including polymer forces, bonds, external forces
-	# a.addSphericalConfinement(density=0.85, k=1)
-	# a.addHarmonicPolymerBonds(wiggleDist=0.05)
-	# a.addGrosbergRepulsiveForce(trunc=50)
-	# a.addStiffness(k=4)
+def set_bond_pairs(forceConst):
+	# NOTE assumes only ONE chain with linear particle-to-particle bonding!
+	for i in range(forceConst['polymerN'] - 1):
+		forceConst['bondPairs'].add((i,i+1))
 
-	# FIXME constants here!
-	polymerN = len(polymer['type'])
+def generate_constant_dictionary(polymerLen, params):
 	nm = meter * 1e-9
+	conlenScale = 1. # NOTE not sure what conlen is so leaving as constant for now
 	kB = BOLTZMANN_CONSTANT_kB * AVOGADRO_CONSTANT_NA
-	kT = kB * params['TEMPERATURE'] * kelvin 
-	conlen = 1. * nm
-	bondLen = 1
-	kbondScalingFactor = float((2 * kT / (conlen) ** 2) / (kilojoule_per_mole / nm ** 2))
-	grosbergTrunc = 50 # FIXME constant! add this to user input
 
-	excludeFromNonbonded = set()
-	
+	forceConstants = {
+		'nm' : nm,
+		'polymerN' : polymerLen,
+		'kT' : kB * params['TEMPERATURE'] * kelvin, 
+		'conlen' : conlenScale * nm,
+		'bondPairs' : set()  
+	}	
+
+	set_bond_pairs(forceConstants)
+
+	return forceConstants
+
+def generate_confinement_force(forceConst, params):
 	# spherical confinement
 	sphereForce = openmm.CustomExternalForce(
 		"step(r-SPHaa) * SPHkb * (sqrt((r-SPHaa)*(r-SPHaa) + SPHt*SPHt) - SPHt) "
 		";r = sqrt(x^2 + y^2 + z^2 + SPHtt^2)")
 
-	for i in range(polymerN):
+	for i in range(forceConst['polymerN']):
 		sphereForce.addParticle(i,[])
 
-	radius = (3 * polymerN / (4 * np.pi * params['CONFINEMENT_DENSITY'])) ** (1 / 3.)
+	radius = (3 * forceConst['polymerN'] / (4 * np.pi * params['CONFINEMENT_DENSITY'])) ** (1 / 3.)
 
 	k = params['CONFINEMENT_K']
 	
-	sphereForce.addGlobalParameter("SPHkb", k * kT / nm)
-	sphereForce.addGlobalParameter("SPHaa", (radius - 1. / k) * nm)
-	sphereForce.addGlobalParameter("SPHt", (1. / k) * nm / 10.)
-	sphereForce.addGlobalParameter("SPHtt", 0.01 * nm)
+	sphereForce.addGlobalParameter("SPHkb", k * forceConst['kT'] / forceConst['nm'])
+	sphereForce.addGlobalParameter("SPHaa", (radius - 1. / k) * forceConst['nm'])
+	sphereForce.addGlobalParameter("SPHt", (1. / k) * forceConst['nm'] / 10.)
+	sphereForce.addGlobalParameter("SPHtt", 0.01 * forceConst['nm'])
 
+	return sphereForce
+
+def generate_repulsive_force(forceConst, params):
 	# grosberg repulsive force 
 	# same between all particles
 	repulseOpt = params['REPULSE_FORCE']
-	radiusGrosberg = conlen
+	grosbergTrunc = params['GROSBERG_TRUNC']
+	radiusGrosberg = forceConst['conlen']
 	nbCutOffDist = radiusGrosberg * 2. ** (1. / 6.)
+
 	repul_energy = (
 		"step(REPcut2 - REPU) * REPU"
 		" + step(REPU - REPcut2) * REPcut2 * (1 + tanh(REPU/REPcut2 - 1));"
@@ -342,34 +340,33 @@ def set_forces_in_system(polymer, params, simSystem):
 		"r2 = (r^10. + (REPsigma03)^10.)^0.1")
 	
 	repulseForce = openmm.CustomNonbondedForce(repul_energy)
-	repulseForce.addGlobalParameter('REPe', kT)
+
+	repulseForce.addGlobalParameter('REPe', forceConst['kT'])
 	repulseForce.addGlobalParameter('REPsigma', radiusGrosberg)
 	repulseForce.addGlobalParameter('REPsigma03', 0.3 * radiusGrosberg)
 
-	repulseForce.addGlobalParameter('REPcut', kT * grosbergTrunc)
-	repulseForce.addGlobalParameter('REPcut2', 0.5 * grosbergTrunc * kT)
+	repulseForce.addGlobalParameter('REPcut', forceConst['kT'] * grosbergTrunc)
+	repulseForce.addGlobalParameter('REPcut2', 0.5 * grosbergTrunc * forceConst['kT'])
 	
-	for i in range(polymerN):
+	for i in range(forceConst['polymerN']):
 		repulseForce.addParticle(())
 
-	# reference code
-        #    for j in range(start, end - 1):
-        #        self.addBond(j, j + 1, wiggleDist,
-        #            distance=bondLength,
-        #            bondType="Harmonic", verbose=False)
-        #        if exceptBonds:
-        #            self.bondsForException.append((j, j + 1))
+	# exclude bonded pairs
+	for pair in forceConst['bondPairs']:
+		repulseForce.addExclusion(pair[0], pair[1])
+		repulseForce.setNonbondedMethod(repulseForce.CutoffNonPeriodic)
 
-	# this part is messy
-	# all remaining things require going into the particle struct
-	# all-by-all comparisons unless I do it smartly
+	return repulseForce
+
+def generate_bond_force(forceConst, params, polymer):
+	kbondScalingFactor = float((2 * forceConst['kT'] / (forceConst['conlen']) ** 2) / (kilojoule_per_mole / forceConst['nm'] ** 2))
 
 	# do check here for input... FIXME
 	bondForces = openmm.HarmonicBondForce()
 	
-	for j in range(polymerN - 1):
-		pType1 = polymer['type'][j]
-		pType2 = polymer['type'][j+1]
+	for pair in forceConst['bondPairs']:
+		pType1 = polymer['type'][pair[0]]
+		pType2 = polymer['type'][pair[1]]
 	 
 		pKey = frozenset([pType1,pType2])
 
@@ -378,37 +375,38 @@ def set_forces_in_system(polymer, params, simSystem):
 		
 		# harmonic bonds
 		kbond = kbondScalingFactor / (wiggleDist**2)
-		bondForces.addBond(j, j+1, wiggleDist, kbond)	
-		excludeFromNonbonded.add((j,j+1))
-	
+		bondForces.addBond(pair[0], pair[1], wiggleDist, kbond)	
+
+	return bondForces
+
+def generate_stiffness_force(forceConst, params):
 	# add stiffness, same for all particles in polymer
-	kStiff = numpy.zeros(polymerN, float) + params['STIFFNESS']
+	kStiff = numpy.zeros(forceConst['polymerN'], float) + params['STIFFNESS']
 	stiffForce = openmm.CustomAngleForce(
 		"kT*angK * (theta - 3.141592) * (theta - 3.141592) * (0.5)")
 
-	for j in range(1, polymerN - 1):
+	for j in range(1, forceConst['polymerN'] - 1):
 		stiffForce.addAngle(j - 1, j, j + 1, [float(kStiff[j])])
 	
-	stiffForce.addGlobalParameter("kT", kT)
+	stiffForce.addGlobalParameter("kT", forceConst['kT'])
 	stiffForce.addPerAngleParameter("angK")
 
-	# check exclusions
-	for pair in excludeFromNonbonded:
-		#repulseForce.addException(pair[0], pair[1], 0, 0, 0, True)
-		repulseForce.addExclusion(pair[0], pair[1])
-		repulseForce.setNonbondedMethod(repulseForce.CutoffNonPeriodic)
+	return stiffForce
 
-	simSystem.addForce(sphereForce) # custom external force
-	simSystem.addForce(repulseForce) # custom nonbonded force
-	simSystem.addForce(bondForces) #exceptBonds = True
-	simSystem.addForce(stiffForce) # custom angle force
+def set_forces_in_system(polymer, params, simSystem):
+	# adds all forces to system
+	# including polymer forces, bonds, external forces
 
-# FIXME consider setting all the forces in their own functions and taking
-# a "factory" style approach to setting them
+	forceConst = generate_constant_dictionary(len(polymer['type']), params)
+	forceList = list()
 
-#def set_stiffness_in_system(params, simSystem):
-#	# adds stiffness to system
-#	pass
+	forceList.append(generate_confinement_force(forceConst, params))
+	forceList.append(generate_repulsive_force(forceConst, params))
+	forceList.append(generate_bond_force(forceConst, params, polymer))
+	forceList.append(generate_stiffness_force(forceConst, params))
+
+	for force in forceList:
+		simSystem.addForce(force)
 
 def init_system(polymer, params):
 	# returns the initialized System
@@ -417,15 +415,8 @@ def init_system(polymer, params):
 	set_polymer_in_system(polymer, simSystem)
 	# add forces to system
 	set_forces_in_system(polymer, params, simSystem)
-	# add stiffness to system -> just another force, adding to set_forces
-	#set_stiffness_in_system(params, simSystem)
 
 	return simSystem
-
-## # context functions #
-## def init_context(system, params)
-## 	# initialize context with the platform, integrator, and system
-##	pass
 
 # integrator functions #
 def init_integrator(params):
@@ -435,7 +426,7 @@ def init_integrator(params):
 		integ = openmm.VariableLangevinIntegrator(params['TEMPERATURE'] * kelvin, params['THERMOSTAT'] * ( 1/ps ), params['ERROR_TOL'])
 		return integ 
 
-# platform functions
+# platform functions #
 def init_platform(params):
 	# returns the correct platform object to use with simulation
 	if params['PLATFORM'] == PARAM_OPTS['PLATFORM']['cuda']:
@@ -456,9 +447,6 @@ def main():
 	# initialize system
 	system = init_system(polymer, params)
 	
-	### initialize context
-	##context = init_context(system, params)
-
 	# initialize integrator
 	integrator = init_integrator(params)
 
@@ -467,65 +455,35 @@ def main():
 
 	# init simulation
 	# using a dummy Topology object because it isn't actually used
-	
 	polymerSim = Simulation(Topology(), system, integrator, platform)	
 
 	polymerSim.context.setPositions(polymer['xyz'])
 
-	#FIXME make these constants user options
-	tolerance = 0.3
-	maxIter = 0 # run until convergence 
+	tolerance = params['ENERGY_MIN_TOL']
+	maxIter = params['ENERGY_MIN_MAX_ITER'] 
 
 	# local energy minim
 	polymerSim.minimizeEnergy(tolerance, maxIter)
 
-	# FIXME more constants to make into user options
-	numBlocks = 50
-	stepsPerBlock = 2000
+	numBlocks = params['NUM_BLOCKS']
+	stepsPerBlock = params['STEPS_PER_BLOCK']
+
 	checkpoint_str = "_checkpoint_"
 	state_str = "_state_"
+
+	stateListFilename = params['SAVE_FILENAME'] + "_state_list.txt"
+	statelistFp = open(stateListFilename, 'w')
 
 	for i in range(numBlocks):
 		addStr = "block_" + str(i)
 		polymerSim.step(numBlocks)
-		polymerSim.saveCheckpoint(params['SAVE_FILENAME'] + checkpoint_str + addStr)
-		polymerSim.saveState(params['SAVE_FILENAME'] + state_str + addStr)
+		
+		checkpointFilename = params['SAVE_FILENAME'] + checkpoint_str + addStr
+		polymerSim.saveCheckpoint(checkpointFilename)
+		stateFilename = params['SAVE_FILENAME'] + state_str + addStr
+		polymerSim.saveState(stateFilename)
+
+		statelistFp.write(stateFilename + "\n")
 	
+	statelistFp.close()
 main()
-
-# multiple arrays for each attribute of the polymer
-# easy to modify later, smaller data structures ot handle now.
-# 1. build polymer
-
-# def read in polymer
-## set masses
-# def adjust orientation
-## center polymer
-## randomize orientation
- 
-# add particle positions to system
-
-# 2. set custom external forces
-
-# def init system
-## temperature/thermometer
-
-# def add forces to system
-## def add spherical constraints to system
-## def add bonds to system
-## def add repulsive / attractive forces to system
-## def add stiffness to system 
-
-# 3. initialize context
-# set platform (CUDA)
-# set integrator
-# set system
-
-# 4. run simulation
-# set the context in sim
-# apply local energy minimization
-# step through
-
-# 5. save files
-# data files
-# draw polymer
