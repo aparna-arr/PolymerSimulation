@@ -24,7 +24,7 @@ TEMPERATURE	300 # in Kelvin
 
 ## Platform and Filenames ##
 INPUT_POLYMER_FILE	../data/testpolymer_spiral.xyz
-SAVE_FILENAME	../test_dirs/Test_11_19_18/Test_11_19_18
+SAVE_FILENAME	../test_dirs/Test_11_21_18/Test_21_19_18
 PLATFORM	cuda
 
 ## Particle-particle interactions ##
@@ -38,8 +38,8 @@ WIGGLE_DIST	A	0.05
 ATTRACT_FORCE	A	False
 ATTR_E	A	0	
 TAIL_E	A	0
-REP_E	A	0
-REP_SIGMA	A	0
+REP_E	B	3.0
+REP_SIGMA	B	1.0
 ATTR_SIGMA	A	0
 TAIL_SIGMA	A	0
 
@@ -50,8 +50,8 @@ WIGGLE_DIST	B	0.05
 ATTRACT_FORCE	B	False
 ATTR_E	B	0	
 TAIL_E	B	0
-REP_E	B	0
-REP_SIGMA	B	0
+REP_E	B	3.0
+REP_SIGMA	B	1.0
 ATTR_SIGMA	B	0
 TAIL_SIGMA	B	0
 @END	A

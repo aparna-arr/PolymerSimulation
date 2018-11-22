@@ -407,11 +407,11 @@ def construct_attractive_functions(forceConst, polymer, params):
 	particleIdentifyStr = ''
 	particleIdentifyFunc = dict()
 	particleReverseMap = dict()
-	for i in range(params['PARTICLE_TYPE_LIST']):
+	for i in range(len(params['PARTICLE_TYPE_LIST'])):
 		particleStr = params['PARTICLE_TYPE_LIST'][i]
-		particleIdx = "p_" + str(i)
-		particleReverseMap[particleStr] = particleIdx
-		particleIdentifyStr = particleIdentifyStr + '' + particleStr + ' = ' + particleIdx + ';'
+		particleIdx = i
+		particleReverseMap[particleStr] = float(i)
+		particleIdentifyStr = particleIdentifyStr + '' + particleStr + ' = ' + str(particleIdx) + ';'
 		particleIdentifyFunc[particleStr] = list()
 		particleIdentifyFunc[particleStr].append('(step(particleIdx1 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx1))')
 		particleIdentifyFunc[particleStr].append('(step(particleIdx2 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx2))')
@@ -420,10 +420,10 @@ def construct_attractive_functions(forceConst, polymer, params):
 	# generate pair identification
 	particlePairIdentifyStr = ''
 	particlePairDict = dict()
-	for i in range(params['PARTICLE_TYPE_LIST']):
+	for i in range(len(params['PARTICLE_TYPE_LIST'])):
 		particleType1 = params['PARTICLE_TYPE_LIST'][i];
 		particlePairDict[particleType1] = dict()
-		for j in range(params['PARTICLE_TYPE_LIST']):
+		for j in range(len(params['PARTICLE_TYPE_LIST'])):
 			particleType2 = params['PARTICLE_TYPE_LIST'][j];
 			boolPairName = 'is' + particleType1 + particleType2
 			particlePairDict[particleType1][particleType2] = boolPairName
@@ -437,9 +437,9 @@ def construct_attractive_functions(forceConst, polymer, params):
 	condensePairDict = dict()
 
 	# FIXME make this loop readable!
-	for i in range(params['PARTICLE_TYPE_LIST']):
+	for i in range(len(params['PARTICLE_TYPE_LIST'])):
 		particleType1 = params['PARTICLE_TYPE_LIST'][i];
-		for j in range(i, params['PARTICLE_TYPE_LIST']):
+		for j in range(i, len(params['PARTICLE_TYPE_LIST'])):
 			particleType2 = params['PARTICLE_TYPE_LIST'][j];
 			boolPair1 = 'is' + particleType1 + particleType2
 			boolPair2 = 'is' + particleType2 + particleType1
@@ -447,7 +447,7 @@ def construct_attractive_functions(forceConst, polymer, params):
 			pairSymmName = boolPair1 + '_or_' + boolPair2
 			particleCondenseStr = particleCondenseStr + '' + pairSymmName + ' = ' + 'step(' + boolPair1 + ' + ' + boolPair2 + ' - 0.1);'
 
-			setKey = frozenset(particleType1,particleType2)
+			setKey = frozenset([particleType1,particleType2])
 			condensePairDict[setKey] = pairSymmName
 
 			
@@ -458,7 +458,7 @@ def construct_attractive_functions(forceConst, polymer, params):
 				'rsc12_' + pairSymmName + ' = rsc4_' + pairSymmName + ' * rsc4_' + pairSymmName + ' * rsc4_' + pairSymmName + ';' +\
 				'rsc4_' + pairSymmName + ' = rsc2_' + pairSymmName + ' * rsc2_' + pairSymmName + ';' + \
 				'rsc2_' + pairSymmName + ' = rsc_' + pairSymmName + ' * rsc_' + pairSymmName + ';' + \
-				'rsc_' + pairSymmname + ' = r / REPsigma_' + pairSymmName + ' * rmin12;')
+				'rsc_' + pairSymmName + ' = r / REPsigma_' + pairSymmName + ' * rmin12;')
 			
 			EattrInnerPair = 'Eattr_inner_' + pairSymmName + ' = - poly_' + pairSymmName + ' * ATTRe_' + pairSymmName + ';'
 
@@ -468,27 +468,27 @@ def construct_attractive_functions(forceConst, polymer, params):
 				'rshft12_' + pairSymmName + ' = rshft4_' + pairSymmName + ' * rshft4_' + pairSymmName + ' * rshft4_' + pairSymmName + ';' +\
 				'rshft4_' + pairSymmName + ' = rshft2_' + pairSymmName + ' * rshft2_' + pairSymmName + ';' + \
 				'rshft2_' + pairSymmName + ' = rshft_' + pairSymmName + ' * rshft_' + pairSymmName + ';' + \
-				'rshft_' + pairSymmname + ' = (r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') / ATTRdelta_' + pairSymmName + ' * rmin12;')
+				'rshft_' + pairSymmName + ' = (r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') / ATTRdelta_' + pairSymmName + ' * rmin12;')
 
 			EtailPair = 'Etail_' + pairSymmName + '- TAILe_' + pairSymmName + ' * rtail_' + pairSymmName + ' * rtail_' + pairSymmName + '(rtail_' + pairSymmName + ' - 1.0) * (rtail_' + pairSymmName + ' - 1.0) * 16.0;'
 		
-			EtailPair = EtailPair + 'rtail_' + pairSymmName + ' = (r - REPsigma_' + pairSymmName + ' - 2 * ATTRdelta_' + pairSymmname + ') / TAILr_' + pairSymmName + ' / 2.0 + 0.5;'
+			EtailPair = EtailPair + 'rtail_' + pairSymmName + ' = (r - REPsigma_' + pairSymmName + ' - 2 * ATTRdelta_' + pairSymmName + ') / TAILr_' + pairSymmName + ' / 2.0 + 0.5;'
 
 			functionStrPair = ErepulsionPair + EattrInnerPair + EattrOuterPair + polyPair + EtailPair
 			
 			functionStr = functionStr + functionStrPair
  
-			mainFuncPair = 'step(REPsigma_' + pairSymmName + ' - r) * Erep_' + pairSymmname + ' * ' + pairSymmName +\
+			mainFuncPair = 'step(REPsigma_' + pairSymmName + ' - r) * Erep_' + pairSymmName + ' * ' + pairSymmName +\
 				'+ step(r - REPsigma_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + ATTRdelta_' + pairSymmName + ' - r)' \
-				' * Eattr_inner' + pairSymmName + ' * ' pairSymmName + ' * ATTR_bool_' + pairSymmName + \
+				' * Eattr_inner' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName + \
 				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + 2.0 * ATTRdelta_' +\
 				pairSymmName + ' - r) * Eattr_outer_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName +\
-				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + + ') * Etail_' + pairSymmName + ' * ' pairSymmName + ' * ATTR_bool_' + pairSymmName
+				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * Etail_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName
 		
-			if mainFuncStr != "":
+			if mainFunctionStr != "":
 				mainFunctionStr = mainFunctionStr + ' + ' + mainFuncPair
 			else:
-				mainFunctionStr = mainFunctionPair
+				mainFunctionStr = mainFuncPair
 	
 	mainFunctionStr += ';'
 	equationString = mainFunctionStr + functionStr + particleCondenseStr + particlePairIdentifyStr + particleIdentifyStr 
@@ -512,25 +512,27 @@ def construct_attractive_functions(forceConst, polymer, params):
 		# FIXME continuation of dumb workaround
 		tailRGlobal = tailSigma
 		
-		attractForce.addGlobalParameter('ATTR_bool_' + pairSymmname, attrBool)
+		attractForce.addGlobalParameter('ATTR_bool_' + pairSymmName, attrBool)
 
-		attractForce.addGlobalParameter('REPe_' + pairSymmname, repE * forceConst['kT'])
-		attractForce.addGlobalParameter('REPsigma_' + pairSymmname, repSigma * forceConst['conlen'])
+		attractForce.addGlobalParameter('REPe_' + pairSymmName, repE * forceConst['kT'])
+		attractForce.addGlobalParameter('REPsigma_' + pairSymmName, repSigma * forceConst['conlen'])
 
-		attractForce.addGlobalParameter('ATTRe_' + pairSymmname, attrE * forceConst['kT'])
-		attractForce.addGlobalParameter('ATTRdelta_' + pairSymmname, forceConst['conlen'] * (attrSigma - repSigma) / 2.0)
+		attractForce.addGlobalParameter('ATTRe_' + pairSymmName, attrE * forceConst['kT'])
+		attractForce.addGlobalParameter('ATTRdelta_' + pairSymmName, forceConst['conlen'] * (attrSigma - repSigma) / 2.0)
 
 		attractForce.addGlobalParameter('TAILr_' + pairSymmName, (tailSigma - attrSigma) * forceConst['kT'])
 		attractForce.addGlobalParameter('TAILe_' + pairSymmName, tailE * forceConst['kT'])
 		
 	# FIXME constants
 	attractForce.addGlobalParameter('emin12', 46656.0 / 823543.0)
-	attractForce.addGlobalParameter('rmin12', np.sqrt(6.0 / 7.0))i
+	attractForce.addGlobalParameter('rmin12', np.sqrt(6.0 / 7.0))
 	attractForce.addPerParticleParameter("particleIdx")
 
-	for i in polymer['type']:
-		pidx = particleReverseMap[i]
-		attractForce.addParticle([pidx])
+	for i in range(len(polymer['type'])):
+		currType = polymer['type'][i]
+		pidx = particleReverseMap[currType]
+		# FIXME something is going wrong with the add Particle thing
+		attractForce.addParticle((float(pidx)))
 
 	# FIXME using the dumb workaround 
 	attractForce.setCutoffDistance(forceConst['conlen'] * tailRGlobal)
