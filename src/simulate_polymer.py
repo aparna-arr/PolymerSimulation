@@ -101,7 +101,14 @@ def init_particle_block(particle, key):
 	particle = {
 		key : {
 			'BOND_TYPE' : PARAM_OPTS['BOND_TYPE']['harmonic'],
-			'WIGGLE_DIST' : 0.05
+			'WIGGLE_DIST' : 0.05,
+			'ATTRACT_FORCE' : True,
+			'ATTR_E' : 0.5,
+			'TAIL_E' : 0.1,
+			'REP_E' : 3.0,
+			'REP_SIGMA' : 1.0,
+			'ATTR_SIGMA' : 2.0,
+			'TAIL_SIGMA' : 3.0
 		}
 	}
 	return particle[key]
@@ -155,8 +162,10 @@ def read_in_sim_specs(filename):
 							blockKey = frozenset([currParticle, otherParticle])
 							params["PARTICLES"][blockKey] = init_particle_block(params["PARTICLES"], blockKey)
 							params["PARTICLES"][blockKey][paramKey] = check_param_opt(paramKey, blockVal)
-						elif paramKey in ["WIGGLE_DIST", "STIFFNESS"]:
+						elif paramKey in ["WIGGLE_DIST", "STIFFNESS", "ATTR_E", "TAIL_E", "REP_E", "REP_SIGMA", "ATTR_SIGMA", "TAIL_SIGMA"]:
 							params["PARTICLES"][blockKey][paramKey] = check_float(blockVal)
+						elif paramKey in ["ATTRACT_FORCE"]:
+							params["PARTICLES"][blockKey][paramKey] = check_bool(blockVal)
 						else:
 							raise InputError("Input [" + paramKey + "] not an option! Input file [" + filename + "]\n" )		
 		
@@ -393,15 +402,160 @@ def generate_stiffness_force(forceConst, params):
 
 	return stiffForce
 
+def construct_attractive_functions(forceConst, polymer, params):
+	# generate particle identification string
+	particleIdentifyStr = ''
+	particleIdentifyFunc = dict()
+	particleReverseMap = dict()
+	for i in range(params['PARTICLE_TYPE_LIST']):
+		particleStr = params['PARTICLE_TYPE_LIST'][i]
+		particleIdx = "p_" + str(i)
+		particleReverseMap[particleStr] = particleIdx
+		particleIdentifyStr = particleIdentifyStr + '' + particleStr + ' = ' + particleIdx + ';'
+		particleIdentifyFunc[particleStr] = list()
+		particleIdentifyFunc[particleStr].append('(step(particleIdx1 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx1))')
+		particleIdentifyFunc[particleStr].append('(step(particleIdx2 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx2))')
+	
+		
+	# generate pair identification
+	particlePairIdentifyStr = ''
+	particlePairDict = dict()
+	for i in range(params['PARTICLE_TYPE_LIST']):
+		particleType1 = params['PARTICLE_TYPE_LIST'][i];
+		particlePairDict[particleType1] = dict()
+		for j in range(params['PARTICLE_TYPE_LIST']):
+			particleType2 = params['PARTICLE_TYPE_LIST'][j];
+			boolPairName = 'is' + particleType1 + particleType2
+			particlePairDict[particleType1][particleType2] = boolPairName
+			particlePairIdentifyStr = particlePairIdentifyStr + '' + boolPairName + ' = ' + particleIdentifyFunc[particleType1][0] + '*' + particleIdentifyFunc[particleType2][1] + ';'
+			
+		
+	# condense pairs into symmetric pairs (sets)	
+	particleCondenseStr = ''
+	functionStr = ''
+	mainFunctionStr = ''
+	condensePairDict = dict()
+
+	# FIXME make this loop readable!
+	for i in range(params['PARTICLE_TYPE_LIST']):
+		particleType1 = params['PARTICLE_TYPE_LIST'][i];
+		for j in range(i, params['PARTICLE_TYPE_LIST']):
+			particleType2 = params['PARTICLE_TYPE_LIST'][j];
+			boolPair1 = 'is' + particleType1 + particleType2
+			boolPair2 = 'is' + particleType2 + particleType1
+
+			pairSymmName = boolPair1 + '_or_' + boolPair2
+			particleCondenseStr = particleCondenseStr + '' + pairSymmName + ' = ' + 'step(' + boolPair1 + ' + ' + boolPair2 + ' - 0.1);'
+
+			setKey = frozenset(particleType1,particleType2)
+			condensePairDict[setKey] = pairSymmName
+
+			
+
+			ErepulsionPair = 'Erep_' + pairSymmName + ' = rsc12 * (rsc2 - 1.0) * REPe_' + pairSymmName + ' / emin12 + REPe_' + pairSymmName + ';'
+
+			ErepulsionPair = (ErepulsionPair +\
+				'rsc12_' + pairSymmName + ' = rsc4_' + pairSymmName + ' * rsc4_' + pairSymmName + ' * rsc4_' + pairSymmName + ';' +\
+				'rsc4_' + pairSymmName + ' = rsc2_' + pairSymmName + ' * rsc2_' + pairSymmName + ';' + \
+				'rsc2_' + pairSymmName + ' = rsc_' + pairSymmName + ' * rsc_' + pairSymmName + ';' + \
+				'rsc_' + pairSymmname + ' = r / REPsigma_' + pairSymmName + ' * rmin12;')
+			
+			EattrInnerPair = 'Eattr_inner_' + pairSymmName + ' = - poly_' + pairSymmName + ' * ATTRe_' + pairSymmName + ';'
+
+			EattrOuterPair = 'Eattr_outer_' + pairSymmName + ' = - poly_' + pairSymmName + ' * (ATTRe_' + pairSymmName + ' - TAILe_' + pairSymmName + ') - TAILe_' + pairSymmName + ';'
+
+			polyPair = ('poly_' + pairSymmName + ' = rshft12_' + pairSymmName + ' * (rshft2_' + pairSymmName + ' - 1.0) / emin12 + 1.0' + ';' + \
+				'rshft12_' + pairSymmName + ' = rshft4_' + pairSymmName + ' * rshft4_' + pairSymmName + ' * rshft4_' + pairSymmName + ';' +\
+				'rshft4_' + pairSymmName + ' = rshft2_' + pairSymmName + ' * rshft2_' + pairSymmName + ';' + \
+				'rshft2_' + pairSymmName + ' = rshft_' + pairSymmName + ' * rshft_' + pairSymmName + ';' + \
+				'rshft_' + pairSymmname + ' = (r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') / ATTRdelta_' + pairSymmName + ' * rmin12;')
+
+			EtailPair = 'Etail_' + pairSymmName + '- TAILe_' + pairSymmName + ' * rtail_' + pairSymmName + ' * rtail_' + pairSymmName + '(rtail_' + pairSymmName + ' - 1.0) * (rtail_' + pairSymmName + ' - 1.0) * 16.0;'
+		
+			EtailPair = EtailPair + 'rtail_' + pairSymmName + ' = (r - REPsigma_' + pairSymmName + ' - 2 * ATTRdelta_' + pairSymmname + ') / TAILr_' + pairSymmName + ' / 2.0 + 0.5;'
+
+			functionStrPair = ErepulsionPair + EattrInnerPair + EattrOuterPair + polyPair + EtailPair
+			
+			functionStr = functionStr + functionStrPair
+ 
+			mainFuncPair = 'step(REPsigma_' + pairSymmName + ' - r) * Erep_' + pairSymmname + ' * ' + pairSymmName +\
+				'+ step(r - REPsigma_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + ATTRdelta_' + pairSymmName + ' - r)' \
+				' * Eattr_inner' + pairSymmName + ' * ' pairSymmName + ' * ATTR_bool_' + pairSymmName + \
+				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + 2.0 * ATTRdelta_' +\
+				pairSymmName + ' - r) * Eattr_outer_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName +\
+				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + + ') * Etail_' + pairSymmName + ' * ' pairSymmName + ' * ATTR_bool_' + pairSymmName
+		
+			if mainFuncStr != "":
+				mainFunctionStr = mainFunctionStr + ' + ' + mainFuncPair
+			else:
+				mainFunctionStr = mainFunctionPair
+	
+	mainFunctionStr += ';'
+	equationString = mainFunctionStr + functionStr + particleCondenseStr + particlePairIdentifyStr + particleIdentifyStr 
+		
+	attractForce = openmm.CustomNonbondedForce(equationString)
+	
+	# FIXME don't let user set tailRadius
+	# as this is used later to set a global parameter (cutoff distance)
+	# temporary extremely dumb workaround
+	tailRGlobal = 0
+	for pair in params['PARTICLES']:
+		pairSymmName = condensePairDict[pair]
+		attrBool = float(params['PARTICLES'][pair]['ATTRACT_FORCE'])
+		attrE = params['PARTICLES'][pair]['ATTR_E']
+		tailE = params['PARTICLES'][pair]['TAIL_E']
+		repE = params['PARTICLES'][pair]['REP_E']
+		repSigma = params['PARTICLES'][pair]['REP_SIGMA']
+		attrSigma = params['PARTICLES'][pair]['ATTR_SIGMA']
+		tailSigma = params['PARTICLES'][pair]['TAIL_SIGMA']
+
+		# FIXME continuation of dumb workaround
+		tailRGlobal = tailSigma
+		
+		attractForce.addGlobalParameter('ATTR_bool_' + pairSymmname, attrBool)
+
+		attractForce.addGlobalParameter('REPe_' + pairSymmname, repE * forceConst['kT'])
+		attractForce.addGlobalParameter('REPsigma_' + pairSymmname, repSigma * forceConst['conlen'])
+
+		attractForce.addGlobalParameter('ATTRe_' + pairSymmname, attrE * forceConst['kT'])
+		attractForce.addGlobalParameter('ATTRdelta_' + pairSymmname, forceConst['conlen'] * (attrSigma - repSigma) / 2.0)
+
+		attractForce.addGlobalParameter('TAILr_' + pairSymmName, (tailSigma - attrSigma) * forceConst['kT'])
+		attractForce.addGlobalParameter('TAILe_' + pairSymmName, tailE * forceConst['kT'])
+		
+	# FIXME constants
+	attractForce.addGlobalParameter('emin12', 46656.0 / 823543.0)
+	attractForce.addGlobalParameter('rmin12', np.sqrt(6.0 / 7.0))i
+	attractForce.addPerParticleParameter("particleIdx")
+
+	for i in polymer['type']:
+		pidx = particleReverseMap[i]
+		attractForce.addParticle([pidx])
+
+	# FIXME using the dumb workaround 
+	attractForce.setCutoffDistance(forceConst['conlen'] * tailRGlobal)
+
+	# set exclusions for pairs	
+	for pair in forceConst['bondPairs']:
+		attractForce.addExclusion(pair[0], pair[1])
+		attractForce.setNonbondedMethod(attractForce.CutoffNonPeriodic)
+
+	return attractForce
+
 def set_forces_in_system(polymer, params, simSystem):
 	# adds all forces to system
 	# including polymer forces, bonds, external forces
+	# FIXME let user choose grosberg or attractive force
 
 	forceConst = generate_constant_dictionary(len(polymer['type']), params)
 	forceList = list()
 
 	forceList.append(generate_confinement_force(forceConst, params))
-	forceList.append(generate_repulsive_force(forceConst, params))
+	# NOTE temporarily commenting out 
+	#forceList.append(generate_repulsive_force(forceConst, params))
+
+	forceList.append(construct_attractive_functions(forceConst, polymer, params))
+
 	forceList.append(generate_bond_force(forceConst, params, polymer))
 	forceList.append(generate_stiffness_force(forceConst, params))
 
