@@ -1,0 +1,5 @@
+test_dirs/OpenMMPolymer_ExampleTest/trajectory/*
+test_dirs/OpenMMTest1/example_sim/*block*
+test_dirs/OpenMMTest1/longer_spiral_simulation/*block*
+test_dirs/PolymerTest1/pymol_vis_test/*trajectory*
+test_dirs/Test_11_19_18/*block*
