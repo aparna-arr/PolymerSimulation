@@ -3,7 +3,7 @@ ENERGY_MIN_TOL	0.3
 ENERGY_MIN_MAX_ITER	0 # run until convergence
 
 # Simulation parameters ##
-NUM_BLOCKS	50
+NUM_BLOCKS	10
 STEPS_PER_BLOCK	2000
 
 ## Confinement ##
@@ -24,24 +24,25 @@ TEMPERATURE	300 # in Kelvin
 
 ## Platform and Filenames ##
 INPUT_POLYMER_FILE	../data/testpolymer_spiral.xyz
-SAVE_FILENAME	../test_dirs/Test_11_21_18/Test_21_19_18
+SAVE_FILENAME	../test_dirs/Test_11_23_18/Test_11_23_18
 PLATFORM	cuda
 
 ## Particle-particle interactions ##
 PARTICLE_TYPE_LIST	A,B # comma separated list
+#PARTICLE_TYPE_LIST	A # comma separated list
 
 @PARTICLE	A # Specs for particle of type A
 PARTICLE_MASS	1
 # A to A bond parameters
 BOND_TYPE	A	harmonic
 WIGGLE_DIST	A	0.05
-ATTRACT_FORCE	A	False
+ATTRACT_FORCE	A	True
 ATTR_E	A	0	
 TAIL_E	A	0
-REP_E	B	3.0
-REP_SIGMA	B	1.0
-ATTR_SIGMA	A	0
-TAIL_SIGMA	A	0
+REP_E	A	100.0
+REP_SIGMA	A	1.0
+ATTR_SIGMA	A	2.0
+TAIL_SIGMA	A	3.0
 
 # if there was a particle B (this is A to B and B to A)
 # B is self-attractive, but A to B only have repulsion, A to A repulsion
@@ -50,24 +51,24 @@ WIGGLE_DIST	B	0.05
 ATTRACT_FORCE	B	False
 ATTR_E	B	0	
 TAIL_E	B	0
-REP_E	B	3.0
+REP_E	B	100.0
 REP_SIGMA	B	1.0
-ATTR_SIGMA	B	0
-TAIL_SIGMA	B	0
+ATTR_SIGMA	B	2.0
+TAIL_SIGMA	B	3.0
 @END	A
 
 @PARTICLE	B # Specs for particle of type B
 PARTICLE_MASS	1
 # B to B bond parameters
-BOND_TYPE	A	harmonic
-WIGGLE_DIST	A	0.05
-ATTRACT_FORCE	B	True
-ATTR_E	B	0.5	
-TAIL_E	B	0.1
-REP_E	B	3.0
+BOND_TYPE	B	harmonic
+WIGGLE_DIST	B	0.05
+ATTRACT_FORCE	B	False
+ATTR_E	B	0	
+TAIL_E	B	0
+REP_E	B	100.0
 REP_SIGMA	B	1.0
-ATTR_SIGMA	B	2.0
-TAIL_SIGMA	B	3.0
+ATTR_SIGMA	B	0.0
+TAIL_SIGMA	B	0.0
 
 # A to B is symmetric, no need to respecify
-@END	B
+#@END	B

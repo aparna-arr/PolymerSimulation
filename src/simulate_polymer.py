@@ -363,6 +363,7 @@ def generate_repulsive_force(forceConst, params):
 	# exclude bonded pairs
 	for pair in forceConst['bondPairs']:
 		repulseForce.addExclusion(pair[0], pair[1])
+		# FIXME should this part be outside the loop?
 		repulseForce.setNonbondedMethod(repulseForce.CutoffNonPeriodic)
 
 	return repulseForce
@@ -409,13 +410,19 @@ def construct_attractive_functions(forceConst, polymer, params):
 	particleReverseMap = dict()
 	for i in range(len(params['PARTICLE_TYPE_LIST'])):
 		particleStr = params['PARTICLE_TYPE_LIST'][i]
-		particleIdx = i
-		particleReverseMap[particleStr] = float(i)
+		particleIdx = i 
+		particleReverseMap[particleStr] = i 
 		particleIdentifyStr = particleIdentifyStr + '' + particleStr + ' = ' + str(particleIdx) + ';'
+	
+		print("particleIdentifyStr [" + str(i) + "] : [" + particleIdentifyStr + "]" )
+	
 		particleIdentifyFunc[particleStr] = list()
 		particleIdentifyFunc[particleStr].append('(step(particleIdx1 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx1))')
 		particleIdentifyFunc[particleStr].append('(step(particleIdx2 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx2))')
 	
+		print("particleStr: [" + particleStr + "]")
+		print("particleIdentifyFunc [" + str(i) + "][0] : [" + particleIdentifyFunc[particleStr][0] + "]" )
+		print("particleIdentifyFunc [" + str(i) + "][1] : [" + particleIdentifyFunc[particleStr][1] + "]" )
 		
 	# generate pair identification
 	particlePairIdentifyStr = ''
@@ -452,7 +459,7 @@ def construct_attractive_functions(forceConst, polymer, params):
 
 			
 
-			ErepulsionPair = 'Erep_' + pairSymmName + ' = rsc12 * (rsc2 - 1.0) * REPe_' + pairSymmName + ' / emin12 + REPe_' + pairSymmName + ';'
+			ErepulsionPair = 'Erep_' + pairSymmName + ' = rsc12_' + pairSymmName + ' * (rsc2_' + pairSymmName + ' - 1.0) * REPe_' + pairSymmName + ' / emin12 + REPe_' + pairSymmName + ';'
 
 			ErepulsionPair = (ErepulsionPair +\
 				'rsc12_' + pairSymmName + ' = rsc4_' + pairSymmName + ' * rsc4_' + pairSymmName + ' * rsc4_' + pairSymmName + ';' +\
@@ -470,7 +477,7 @@ def construct_attractive_functions(forceConst, polymer, params):
 				'rshft2_' + pairSymmName + ' = rshft_' + pairSymmName + ' * rshft_' + pairSymmName + ';' + \
 				'rshft_' + pairSymmName + ' = (r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') / ATTRdelta_' + pairSymmName + ' * rmin12;')
 
-			EtailPair = 'Etail_' + pairSymmName + '- TAILe_' + pairSymmName + ' * rtail_' + pairSymmName + ' * rtail_' + pairSymmName + '(rtail_' + pairSymmName + ' - 1.0) * (rtail_' + pairSymmName + ' - 1.0) * 16.0;'
+			EtailPair = 'Etail_' + pairSymmName + ' = - TAILe_' + pairSymmName + ' * rtail_' + pairSymmName + ' * rtail_' + pairSymmName + ' * (rtail_' + pairSymmName + ' - 1.0) * (rtail_' + pairSymmName + ' - 1.0) * 16.0;'
 		
 			EtailPair = EtailPair + 'rtail_' + pairSymmName + ' = (r - REPsigma_' + pairSymmName + ' - 2 * ATTRdelta_' + pairSymmName + ') / TAILr_' + pairSymmName + ' / 2.0 + 0.5;'
 
@@ -478,12 +485,12 @@ def construct_attractive_functions(forceConst, polymer, params):
 			
 			functionStr = functionStr + functionStrPair
  
-			mainFuncPair = 'step(REPsigma_' + pairSymmName + ' - r) * Erep_' + pairSymmName + ' * ' + pairSymmName +\
+			mainFuncPair = '(step(REPsigma_' + pairSymmName + ' - r) * Erep_' + pairSymmName + ' * ' + pairSymmName +\
 				'+ step(r - REPsigma_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + ATTRdelta_' + pairSymmName + ' - r)' \
-				' * Eattr_inner' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName + \
+				' * Eattr_inner_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName + \
 				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + 2.0 * ATTRdelta_' +\
 				pairSymmName + ' - r) * Eattr_outer_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName +\
-				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * Etail_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName
+				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * Etail_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName + ')'
 		
 			if mainFunctionStr != "":
 				mainFunctionStr = mainFunctionStr + ' + ' + mainFuncPair
@@ -492,6 +499,9 @@ def construct_attractive_functions(forceConst, polymer, params):
 	
 	mainFunctionStr += ';'
 	equationString = mainFunctionStr + functionStr + particleCondenseStr + particlePairIdentifyStr + particleIdentifyStr 
+
+	print("DEBUG: EQUATION STRING")
+	print(equationString)
 		
 	attractForce = openmm.CustomNonbondedForce(equationString)
 	
@@ -509,6 +519,9 @@ def construct_attractive_functions(forceConst, polymer, params):
 		attrSigma = params['PARTICLES'][pair]['ATTR_SIGMA']
 		tailSigma = params['PARTICLES'][pair]['TAIL_SIGMA']
 
+		print("DEBUG: attrBool: [" + str(attrBool) + "]")
+		print("DEBUG: repSigma: [" + str(repSigma) + "]")
+
 		# FIXME continuation of dumb workaround
 		tailRGlobal = tailSigma
 		
@@ -516,6 +529,8 @@ def construct_attractive_functions(forceConst, polymer, params):
 
 		attractForce.addGlobalParameter('REPe_' + pairSymmName, repE * forceConst['kT'])
 		attractForce.addGlobalParameter('REPsigma_' + pairSymmName, repSigma * forceConst['conlen'])
+
+		print("Adding param: [" + 'REPsigma_' + pairSymmName + "]")
 
 		attractForce.addGlobalParameter('ATTRe_' + pairSymmName, attrE * forceConst['kT'])
 		attractForce.addGlobalParameter('ATTRdelta_' + pairSymmName, forceConst['conlen'] * (attrSigma - repSigma) / 2.0)
@@ -532,7 +547,8 @@ def construct_attractive_functions(forceConst, polymer, params):
 		currType = polymer['type'][i]
 		pidx = particleReverseMap[currType]
 		# FIXME something is going wrong with the add Particle thing
-		attractForce.addParticle((float(pidx)))
+		#print("DEBUG[" + str(i) + "]: pidx is [", str(pidx), "] [", str(float(pidx)), "]")
+		attractForce.addParticle([pidx])
 
 	# FIXME using the dumb workaround 
 	attractForce.setCutoffDistance(forceConst['conlen'] * tailRGlobal)
