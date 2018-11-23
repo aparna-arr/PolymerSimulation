@@ -485,12 +485,12 @@ def construct_attractive_functions(forceConst, polymer, params):
 			
 			functionStr = functionStr + functionStrPair
  
-			mainFuncPair = '(step(REPsigma_' + pairSymmName + ' - r) * Erep_' + pairSymmName + ' * ' + pairSymmName +\
+			mainFuncPair = '(step(REPsigma_' + pairSymmName + ' - r) * Erep_' + pairSymmName +\
 				'+ step(r - REPsigma_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + ATTRdelta_' + pairSymmName + ' - r)' \
-				' * Eattr_inner_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName + \
+				' * Eattr_inner_' + pairSymmName + ' * ATTR_bool_' + pairSymmName + \
 				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * step(REPsigma_' + pairSymmName + ' + 2.0 * ATTRdelta_' +\
-				pairSymmName + ' - r) * Eattr_outer_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName +\
-				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * Etail_' + pairSymmName + ' * ' + pairSymmName + ' * ATTR_bool_' + pairSymmName + ')'
+				pairSymmName + ' - r) * Eattr_outer_' + pairSymmName + ' * ATTR_bool_' + pairSymmName +\
+				'+ step(r - REPsigma_' + pairSymmName + ' - ATTRdelta_' + pairSymmName + ') * Etail_' + pairSymmName + ' * ATTR_bool_' + pairSymmName + ') * step(' + pairSymmName + ' - 0.1)'
 		
 			if mainFunctionStr != "":
 				mainFunctionStr = mainFunctionStr + ' + ' + mainFuncPair

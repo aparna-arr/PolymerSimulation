@@ -3,7 +3,7 @@ ENERGY_MIN_TOL	0.3
 ENERGY_MIN_MAX_ITER	0 # run until convergence
 
 # Simulation parameters ##
-NUM_BLOCKS	10
+NUM_BLOCKS	50
 STEPS_PER_BLOCK	2000
 
 ## Confinement ##
@@ -23,7 +23,8 @@ THERMOSTAT	0.02
 TEMPERATURE	300 # in Kelvin
 
 ## Platform and Filenames ##
-INPUT_POLYMER_FILE	../data/testpolymer_spiral.xyz
+#INPUT_POLYMER_FILE	../data/testpolymer_spiral.xyz
+INPUT_POLYMER_FILE	../data/testpolymer_spiral_half_B.xyz
 SAVE_FILENAME	../test_dirs/Test_11_23_18/Test_11_23_18
 PLATFORM	cuda
 
@@ -36,7 +37,7 @@ PARTICLE_MASS	1
 # A to A bond parameters
 BOND_TYPE	A	harmonic
 WIGGLE_DIST	A	0.05
-ATTRACT_FORCE	A	True
+ATTRACT_FORCE	A	False
 ATTR_E	A	0	
 TAIL_E	A	0
 REP_E	A	100.0
@@ -51,7 +52,7 @@ WIGGLE_DIST	B	0.05
 ATTRACT_FORCE	B	False
 ATTR_E	B	0	
 TAIL_E	B	0
-REP_E	B	100.0
+REP_E	B	0
 REP_SIGMA	B	1.0
 ATTR_SIGMA	B	2.0
 TAIL_SIGMA	B	3.0
@@ -62,13 +63,13 @@ PARTICLE_MASS	1
 # B to B bond parameters
 BOND_TYPE	B	harmonic
 WIGGLE_DIST	B	0.05
-ATTRACT_FORCE	B	False
-ATTR_E	B	0	
-TAIL_E	B	0
-REP_E	B	100.0
+ATTRACT_FORCE	B	True
+ATTR_E	B	1	
+TAIL_E	B	0.1
+REP_E	B	100
 REP_SIGMA	B	1.0
-ATTR_SIGMA	B	0.0
-TAIL_SIGMA	B	0.0
+ATTR_SIGMA	B	2.0
+TAIL_SIGMA	B	3.0
 
 # A to B is symmetric, no need to respecify
 #@END	B
