@@ -1,0 +1,14 @@
+POLYMER_LEN	10000
+DEFAULT_MARKER	A
+
+SAVE_PATH	/scratch/users/arrajpur/PolymerDomainDist/xyz
+SAVE_FILENAME	polymer_domain_dist
+
+@DOMAIN
+DOMAIN_MARKER	B
+MARKER_PERC	0.5,1
+DOMAIN_START	4500
+DOMAIN_END	5500	
+@END
+
+# can add more domains if needed. Just make sure your simulation input file has all of them added!!!

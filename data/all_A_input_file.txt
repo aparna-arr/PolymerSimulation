@@ -1,0 +1,46 @@
+## Energy Minimization Params ##
+ENERGY_MIN_TOL	0.3
+ENERGY_MIN_MAX_ITER	0 # run until convergence
+
+# Simulation parameters ##
+NUM_BLOCKS	1000
+STEPS_PER_BLOCK	2000
+
+## Confinement ##
+CENTER	true	# true or false
+CONFINEMENT_DENSITY	0.85 # assume sphere
+CONFINEMENT_K	1 # assume sphere
+
+## Nonbonded repulsive forces ##
+#REPULSE_FORCE	grosberg
+#STIFFNESS	4
+#GROSBERG_TRUNC	50
+
+## Integrator params ##
+INTEGRATOR	variableLangevin
+ERROR_TOL	0.01 # for the integrator
+THERMOSTAT	0.02
+TEMPERATURE	300 # in Kelvin
+
+## Platform and Filenames ##
+INPUT_POLYMER_FILE	../data/polymer_spiral_50k_A.xyz
+SAVE_PATH	/scratch/users/arrajpur/Test_11_27_18
+SAVE_FILENAME	Test_11_27_18
+PLATFORM	cuda
+
+## Particle-particle interactions ##
+PARTICLE_TYPE_LIST	A # comma separated list
+
+@PARTICLE	A # Specs for particle of type A
+PARTICLE_MASS	1
+# A to A bond parameters
+BOND_TYPE	A	harmonic
+WIGGLE_DIST	A	0.05
+ATTRACT_FORCE	A	False
+ATTR_E	A	0	
+TAIL_E	A	0
+REP_E	A	100.0
+REP_SIGMA	A	1.0
+ATTR_SIGMA	A	2.0
+TAIL_SIGMA	A	3.0
+@END	A

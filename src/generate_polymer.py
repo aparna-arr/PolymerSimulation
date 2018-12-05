@@ -3,10 +3,10 @@
 
 from openmmlib import polymerutils
 
-polymer = polymerutils.create_spiral(r1=10, r2=13, N=5000)
+polymer = polymerutils.create_spiral(r1=10, r2=13, N=50000)
 polymer = polymer.transpose()
 
-filename = "testpolymer_spiral.xyz";
+filename = "polymer_spiral_50k_A.xyz";
 fh = open(filename, "w");
 
 fh.write(str(len(polymer)))

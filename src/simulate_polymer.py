@@ -1,10 +1,13 @@
+#!/home/groups/aboettig/Software/anaconda3/envs/openmm-env/bin/python
+
 from simtk.openmm.app import *
 from simtk.openmm import *
 from simtk.unit import *
 from sys import stdout
 import sys
-import os.path
+import os
 import numpy as np
+import subprocess
 
 from enum import Enum
 ## constants and enums ##
@@ -81,6 +84,7 @@ def init_params():
 		'TEMPERATURE' : 300,
 		'INPUT_POLYMER_FILE' : None,
 		'SAVE_FILENAME' : "polymer_simulation",
+		'SAVE_PATH' : ".",
 		'PLATFORM' : PARAM_OPTS['PLATFORM']['cuda'],
 		'PARTICLE_TYPE_LIST' : list(), 
 		'PARTICLES' : dict(),
@@ -181,7 +185,7 @@ def read_in_sim_specs(filename):
 				params[paramKey] = check_int(paramVal)
 			elif paramKey in ["INTEGRATOR", "PLATFORM", "REPULSE_FORCE"]:
 				params[paramKey] = check_param_opt(paramKey,paramVal)
-			elif paramKey in ["INPUT_POLYMER_FILE", "SAVE_FILENAME"]:
+			elif paramKey in ["INPUT_POLYMER_FILE", "SAVE_FILENAME", "SAVE_PATH"]:
 				params[paramKey] = paramVal
 			elif paramKey == "PARTICLE_TYPE_LIST":
 				params[paramKey] = make_particle_list(paramVal)
@@ -640,19 +644,23 @@ def main():
 	numBlocks = params['NUM_BLOCKS']
 	stepsPerBlock = params['STEPS_PER_BLOCK']
 
-	checkpoint_str = "_checkpoint_"
+	#checkpoint_str = "_checkpoint_"
 	state_str = "_state_"
 
-	stateListFilename = params['SAVE_FILENAME'] + "_state_list.txt"
+	if not os.path.isdir(params['SAVE_PATH']):
+		subprocess.run(["mkdir", "-p", params['SAVE_PATH']])
+
+	subprocess.run(["cp", params['PARAM_FILE'], params['SAVE_PATH'] + '/'])
+	stateListFilename = params['SAVE_PATH'] + '/' + params['SAVE_FILENAME'] + "_state_list.txt"
 	statelistFp = open(stateListFilename, 'w')
 
 	for i in range(numBlocks):
 		addStr = "block_" + str(i)
 		polymerSim.step(numBlocks)
 		
-		checkpointFilename = params['SAVE_FILENAME'] + checkpoint_str + addStr
-		polymerSim.saveCheckpoint(checkpointFilename)
-		stateFilename = params['SAVE_FILENAME'] + state_str + addStr
+		#checkpointFilename = params['SAVE_PATH'] + '/' + params['SAVE_FILENAME'] + checkpoint_str + addStr
+		#polymerSim.saveCheckpoint(checkpointFilename)
+		stateFilename = params['SAVE_PATH'] + '/' + params['SAVE_FILENAME'] + state_str + addStr
 		polymerSim.saveState(stateFilename)
 
 		statelistFp.write(stateFilename + "\n")

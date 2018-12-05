@@ -1,3 +1,5 @@
+#!/home/groups/aboettig/Software/anaconda3/envs/openmm-env/bin/python
+
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D 
 import matplotlib.animation as animation
