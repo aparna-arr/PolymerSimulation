@@ -89,7 +89,7 @@ my $batch_template = "#!/bin/bash
 #SBATCH --job-name=$output_prefix
 #SBATCH --output=$output_prefix.%j.out
 #SBATCH --error=$output_prefix.%j.err
-#SBATCH --time=5:00:00
+#SBATCH --time=10:00:00
 #SBATCH -p gpu
 #SBATCH --gres gpu:1
 #SBATCH --nodes=1
@@ -107,7 +107,7 @@ for (my $i = 0; $i < @templatenames; $i++) {
 		
 	close TMP;
 
-	$batch_template .= "python simulate_polymer.py $templatenames[$i]\n";
+	$batch_template .= "simulate_polymer.py $templatenames[$i]\n";
 }
 
 open(BAT, ">", "$output_dir/batch/run_batch_$output_prefix\.sh");

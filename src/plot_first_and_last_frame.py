@@ -26,11 +26,22 @@ def read_in_data(filename_list):
 	searchPattern = re.compile('\s*<Position x.+')
 	
 	datasetCount = 0
-	currLineCount = 0
+	lineCount = 0
+	fileList = list()
+	currfile = ""
 	for line in fp_list:
 		currfile = line.rstrip("\n")
+		
+		if lineCount == 0:
+			fileList.append(currfile)
 
-		fp = open(currfile, "r")
+		lineCount = lineCount + 1
+
+	if lineCount > len(fileList) + 1:
+		fileList.append(currfile)
+	
+	for f in fileList:
+		fp = open(f, "r")
 		data.append(dict())
 		data[datasetCount] = {
 			'x' : list(),
@@ -92,64 +103,38 @@ def read_in_data(filename_list):
 
 def main():
 	
-	if len(sys.argv) < 3:
-		print("Usage: plot_animation.py <list_of_state_files.txt> <path/to/outfile/outfile_base_name> <total frames in gif>\n", file=sys.stderr)
+	if len(sys.argv) < 2:
+		print("Usage: plot_first_and_last_frame.py <list_of_state_files.txt> <path/to/outfile/outfile_base_name>\n", file=sys.stderr)
 		sys.exit(1)
 
 	xyzData, minmax = read_in_data(sys.argv[1])
 	outfilename = sys.argv[2]
-	frameCount = int(sys.argv[3])
-	nfr = len(xyzData)
-	fps = 10 # Frame per sec
-	#print("frames is " + str(nfr))
 
 	numPoints = len(xyzData[0]['x'])
-	print("numPoints [" + str(numPoints) + "]")
 
 	cmap = cm.rainbow(np.linspace(0.0, 1.0, numPoints))
 
 	fig = plt.figure()
 	ax = fig.add_subplot(111, projection='3d')
-	#sct, = ax.plot([],[],[], "bo-", markersize=2)
-	#plot(x, y, color='green', linestyle='dashed', marker='o',
-	#markerfacecolor='blue', markersize=12).
-	#idxs = range(numPoints)
-	#colors = cmap[idxs]
 
-	#rcolors = plt.cm.rainbow(range(numPoints))
-
-	#sct, = ax.plot([], [], [], color='red', linestyle='solid')
-	sct = ax.scatter([], [], [], color=cmap[range(numPoints)])
-	#sct, = ax.plot(xyzData[0]['x'], xyzData[0]['y'], xyzData[0]['z'], color=cmap[range(numPoints)], linestyle='solid', marker='.', markersize=2)
-
-
-	multiplier = round(nfr / frameCount, 0)
-	title = ax.set_title('Polymer Frame 0')
-
-	multiplier = int(multiplier)
-
-	if multiplier < 1:
-		multiplier = 1
-
-
-	def updateAni(ifrm):
-		print('ifrm is [', ifrm, ']')
-		
-		sct._offsets3d = (xyzData[ifrm*multiplier]['x'], xyzData[ifrm*multiplier]['y'], xyzData[ifrm*multiplier]['z'])
-		title.set_text('Polymer Frame ' + str(ifrm) + ' Timestep ' + str(ifrm*multiplier))		
-		#sct.set_3d_properties(xyzData[ifrm]['z'])
-		return sct
-	
+	first = ax.scatter([], [], [], color=cmap[range(numPoints)])
+	first._offsets3d = (xyzData[0]['x'], xyzData[0]['y'], xyzData[0]['z'])
+	title = ax.set_title('Polymer Frame First')
 	ax.set_xlim(minmax['min_x'], minmax['max_x'])
 	ax.set_ylim(minmax['min_y'], minmax['max_y'])
 	ax.set_zlim(minmax['min_z'], minmax['max_z'])
-	ani = animation.FuncAnimation(fig,updateAni, frameCount, interval=15)
-	#ani = animation.FuncAnimation(fig,updateAni,50, interval=50)
 	
-	ani.save(outfilename + '.gif', writer='imagemagick', fps = fps)
+	fig.savefig(outfilename + '_first.png', bbox_inches='tight')
 
+	fig2 = plt.figure()
+	ax2 = fig2.add_subplot(111, projection='3d')
+	last = ax2.scatter([], [], [], color=cmap[range(numPoints)])
+	last._offsets3d = (xyzData[1]['x'], xyzData[1]['y'], xyzData[1]['z'])
+	title2 = ax2.set_title('Polymer Frame Last')
 	
-	#Writer = animation.writers['ffmpeg']
-	#writer = Writer(fps=fps, metadata=dict(artist='Me'), bitrate=1800)
-	#ani.save(outfilename + '.mp4', writer='ffmpeg')	
+	ax2.set_xlim(minmax['min_x'], minmax['max_x'])
+	ax2.set_ylim(minmax['min_y'], minmax['max_y'])
+	ax2.set_zlim(minmax['min_z'], minmax['max_z'])
+
+	fig2.savefig(outfilename + '_last.png', bbox_inches='tight')
 main()

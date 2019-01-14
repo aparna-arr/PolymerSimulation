@@ -36,32 +36,57 @@ def calculate_distance(pt1, pt2):
 	return np.sqrt((pt1['x'] - pt2['x'])^2 + (pt1['y'] - pt2['y'])^2 + (pt1['z'] - pt2['z'])^2)
 
 
-def calculate_radius_of_gyration(xyz):
+def calculate_radius_of_gyration(xyz, domains):
 	rgs = list()	
 
 	for timestep in range(len(xyz)):
 		currDat = xyz[timestep]
 		normDat = currDat - np.mean(currDat, axis=0)[None,:]
-		rgs.append(np.sqrt(np.sum(np.var(np.array(normDat),0))))
+		
+		if len(domains) == 0:
+			rgs.append(str(np.sqrt(np.sum(np.var(np.array(normDat),0)))))
+		else:
+			domainRgsStr = str(np.sqrt(np.sum(np.var(np.array(normDat),0))))
+			for dStart,dEnd in domains:
+				domainDat = currDat[dStart:dEnd]
+				domainNormDat = domainDat - np.mean(domainDat, axis=0)[None,:]
+				domainRgs = str(np.sqrt(np.sum(np.var(np.array(domainNormDat),0))))
+				domainRgsStr = domainRgsStr + '\t' + domainRgs	
+			
+			rgs.append(domainRgsStr)
 
 	return rgs	
 
 def main():
+	print("In Main", flush=True)
 
-	if len(sys.argv) < 2:
-		print("Usage: calculate_polymer_statistics.py <list_of_state_files.txt> <path/to/outfile/outfile_base_name>\n", file=sys.stderr)
+	if len(sys.argv) < 3:
+		print("Usage: calculate_polymer_statistics.py <list_of_state_files.txt> <path/to/outfile/outfile_base_name> <optional: comma-sep specific domains to calculate rgs within (0-based) like 1000,2000>\n", file=sys.stderr)
 		sys.exit(1)
 
+	print("Reading in data", flush=True)
 	xyzData = read_in_data(sys.argv[1])
+	print("Data read in", flush=True)
 	outfilename = sys.argv[2]
 
-	rgs = calculate_radius_of_gyration(xyzData)
+	domains = list()
+	header = "FullPolymer"
+	if len(sys.argv) > 3:
+		for i in range(3,len(sys.argv)):
+			start,end = sys.argv[i].split(',')
+			domains.append((int(start),int(end)))
+			header = header + '\t' 'domain_' + start + "_" + end
+
+	print("Calculating RGS", flush=True)
+	rgs = calculate_radius_of_gyration(xyzData, domains)
+	print("Done calculating RGS", flush=True)
 
 	fp = open(outfilename + "_RGs.txt", "w")
-
+	fp.write(header + "\n")
 	for i in range(len(rgs)):
-		fp.write(str(rgs[i]) + "\n")
+		fp.write(rgs[i] + "\n")
 
 	fp.close()
 
+print("Starting script, calling Main()", flush=True)
 main()
