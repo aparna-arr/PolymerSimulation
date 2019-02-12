@@ -65,11 +65,13 @@ while(<TEMPL>) {
 
                 }
 		elsif ($line =~ /ATTR_E.+\$INIT/) {
+			my $count = 0;
 			for (my $i = 0; $i < @attr_coeffs; $i++) {
 				my $attre = $line;
 				$attre =~ s/\$INIT/$attr_coeffs[$i]/;
 				for (my $j = 0; $j < $reps; $j++) {
-					$paramlines[$i] .= $attre . "\n";
+					$paramlines[$count] .= $attre . "\n";
+					$count++;
 				}
 			}
 		}
@@ -86,7 +88,7 @@ for (my $i = 0; $i < @attr_coeffs; $i++) {
 #SBATCH --job-name=$output_prefix\_attre_$attr_coeffs[$i]
 #SBATCH --output=$output_prefix\_attre_$attr_coeffs[$i].%j.out
 #SBATCH --error=$output_prefix\_attre_$attr_coeffs[$i].%j.err
-#SBATCH --time=10:00:00
+#SBATCH --time=1-00:00:00
 #SBATCH -p gpu
 #SBATCH --gres gpu:1
 #SBATCH --nodes=1

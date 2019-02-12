@@ -4,18 +4,15 @@ ENERGY_MIN_TOL	0.3
 ENERGY_MIN_MAX_ITER	0 # run until convergence
 
 # Simulation parameters ##
-NUM_BLOCKS	50
+NUM_BLOCKS	250
 STEPS_PER_BLOCK	2000
 
 ## Confinement ##
 CENTER	true	# true or false
-CONFINEMENT_DENSITY	0.85 # assume sphere
+CONFINEMENT_DENSITY	0.3 # assume sphere
 CONFINEMENT_K	1 # assume sphere
 
-## Nonbonded repulsive forces ##
-REPULSE_FORCE	grosberg
-STIFFNESS	4
-GROSBERG_TRUNC	50
+STIFFNESS	0
 
 ## Integrator params ##
 INTEGRATOR	variableLangevin
@@ -24,15 +21,13 @@ THERMOSTAT	0.02
 TEMPERATURE	300 # in Kelvin
 
 ## Platform and Filenames ##
-#INPUT_POLYMER_FILE	../data/testpolymer_spiral.xyz
-INPUT_POLYMER_FILE	../data/testpolymer_spiral_half_B.xyz
-SAVE_PATH	../test_dirs/Test_11_23_18
-SAVE_FILENAME	Test_11_23_18
-PLATFORM	cuda
+INPUT_POLYMER_FILE	$INIT
+SAVE_PATH	$INIT
+SAVE_FILENAME	$INIT
+PLATFORM	cpu
 
 ## Particle-particle interactions ##
 PARTICLE_TYPE_LIST	A,B # comma separated list
-#PARTICLE_TYPE_LIST	A # comma separated list
 
 @PARTICLE	A # Specs for particle of type A
 PARTICLE_MASS	1
@@ -47,14 +42,13 @@ REP_SIGMA	A	1.0
 ATTR_SIGMA	A	2.0
 TAIL_SIGMA	A	3.0
 
-# if there was a particle B (this is A to B and B to A)
-# B is self-attractive, but A to B only have repulsion, A to A repulsion
+# A to B / B to A bond parameters
 BOND_TYPE	B	harmonic
 WIGGLE_DIST	B	0.05
 ATTRACT_FORCE	B	False
 ATTR_E	B	0	
 TAIL_E	B	0
-REP_E	B	0
+REP_E	B	100.0
 REP_SIGMA	B	1.0
 ATTR_SIGMA	B	2.0
 TAIL_SIGMA	B	3.0
@@ -65,13 +59,11 @@ PARTICLE_MASS	1
 # B to B bond parameters
 BOND_TYPE	B	harmonic
 WIGGLE_DIST	B	0.05
-ATTRACT_FORCE	B	True
-ATTR_E	B	1	
-TAIL_E	B	0.1
-REP_E	B	100
+ATTRACT_FORCE	B	false
+ATTR_E	B	0	
+TAIL_E	B	0
+REP_E	B	100.0
 REP_SIGMA	B	1.0
 ATTR_SIGMA	B	2.0
 TAIL_SIGMA	B	3.0
-
-# A to B is symmetric, no need to respecify
-#@END	B
+@END	B

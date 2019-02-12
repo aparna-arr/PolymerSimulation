@@ -1,0 +1,14 @@
+POLYMER_LEN	524288
+DEFAULT_MARKER	A
+
+SAVE_PATH	/scratch/users/arrajpur/PolymerDomainDistLarge/xyz
+SAVE_FILENAME	polymer_domain_dist_large
+
+@DOMAIN
+DOMAIN_MARKER	B
+MARKER_PERC	1
+DOMAIN_START	257144
+DOMAIN_END	267144
+@END
+
+

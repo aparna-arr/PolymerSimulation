@@ -15,7 +15,7 @@ PARAM_OPTS = {
 	'INTEGRATOR' : {'variablelangevin' : 1},
 	'BOND_TYPE' : {'harmonic' : 1},
 	'REPULSE_FORCE' : {'grosberg' : 1},
-	'PLATFORM' : {'cuda' : 1}
+	'PLATFORM' : {'cuda' : 1, 'cpu' : 2}
 }
 
 ## exception class ##
@@ -93,6 +93,7 @@ def init_params():
 		'STIFFNESS' : 4,
 		'GROSBERG_TRUNC' : 50,
 		'ERROR_TOL' : 0.01,
+		'ENERGY_MIN_BOOL' : True,
 		'ENERGY_MIN_TOL' : 0.3,
 		'ENERGY_MIN_MAX_ITER' : 0,
 		'NUM_BLOCKS' : 50,
@@ -189,7 +190,7 @@ def read_in_sim_specs(filename):
 				params[paramKey] = paramVal
 			elif paramKey == "PARTICLE_TYPE_LIST":
 				params[paramKey] = make_particle_list(paramVal)
-			elif paramKey == "CENTER":
+			elif paramKey in ["CENTER", "ENERGY_MIN_BOOL"]:
 				params[paramKey] = check_bool(paramVal)
 			else:
 				raise InputError("Input [" + paramKey + "] not an option! Input file [" + filename + "]\n" )		
@@ -608,6 +609,8 @@ def init_platform(params):
 	if params['PLATFORM'] == PARAM_OPTS['PLATFORM']['cuda']:
 		plat = openmm.Platform.getPlatformByName('CUDA')
 		return plat
+	elif params['PLATFORM'] == PARAM_OPTS['PLATFORM']['cpu']:
+		plat = openmm.Platform.getPlatformByName('CPU')
 
 ## MAIN ##
 
@@ -639,7 +642,8 @@ def main():
 	maxIter = params['ENERGY_MIN_MAX_ITER'] 
 
 	# local energy minim
-	polymerSim.minimizeEnergy(tolerance, maxIter)
+	if params['ENERGY_MIN_BOOL']:
+		polymerSim.minimizeEnergy(tolerance, maxIter)
 
 	numBlocks = params['NUM_BLOCKS']
 	stepsPerBlock = params['STEPS_PER_BLOCK']
