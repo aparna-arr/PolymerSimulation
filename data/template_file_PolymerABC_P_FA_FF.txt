@@ -1,0 +1,105 @@
+## Energy Minimization Params ##
+ENERGY_MIN_BOOL	true
+ENERGY_MIN_TOL	0.3
+ENERGY_MIN_MAX_ITER	0 # run until convergence
+
+# Simulation parameters ##
+NUM_BLOCKS	1000
+STEPS_PER_BLOCK	2000
+
+## Confinement ##
+CENTER	true	# true or false
+CONFINEMENT_DENSITY	0.3 # assume sphere
+CONFINEMENT_K	1 # assume sphere
+
+STIFFNESS	0
+
+## Integrator params ##
+INTEGRATOR	variableLangevin
+ERROR_TOL	0.01 # for the integrator
+THERMOSTAT	0.02
+TEMPERATURE	300 # in Kelvin
+
+## Platform and Filenames ##
+INPUT_POLYMER_FILE	$INIT
+SAVE_PATH	$INIT
+SAVE_FILENAME	$INIT
+PLATFORM	cuda
+
+## Particle-particle interactions ##
+PARTICLE_TYPE_LIST	A,B,C # comma separated list
+
+@PARTICLE	A # Specs for particle of type A
+PARTICLE_MASS	1
+# A to A bond parameters
+BOND_TYPE	A	harmonic
+WIGGLE_DIST	A	0.05
+ATTRACT_FORCE	A	False
+ATTR_E	A	0	
+TAIL_E	A	0
+REP_E	A	100.0
+REP_SIGMA	A	1.0
+ATTR_SIGMA	A	2.0
+TAIL_SIGMA	A	3.0
+
+# A to B / B to A bond parameters
+BOND_TYPE	B	none
+WIGGLE_DIST	B	0.05
+ATTRACT_FORCE	B	True
+ATTR_E	B	$INIT	
+TAIL_E	B	0.1
+REP_E	B	100.0
+REP_SIGMA	B	1.0
+ATTR_SIGMA	B	2.0
+TAIL_SIGMA	B	3.0
+
+# A to C / C to A bond parameters
+BOND_TYPE	C	none
+WIGGLE_DIST	C	0.05
+ATTRACT_FORCE	C	False
+ATTR_E	C	0	
+TAIL_E	C	0
+REP_E	C	100.0
+REP_SIGMA	C	1.0
+ATTR_SIGMA	C	2.0
+TAIL_SIGMA	C	3.0
+@END	A
+
+@PARTICLE	B # Specs for particle of type B
+PARTICLE_MASS	1
+# B to B bond parameters
+BOND_TYPE	B	none
+WIGGLE_DIST	B	0.05
+ATTRACT_FORCE	B	True
+ATTR_E	B	$INIT	
+TAIL_E	B	0.1
+REP_E	B	100.0
+REP_SIGMA	B	1.0
+ATTR_SIGMA	B	2.0
+TAIL_SIGMA	B	3.0
+
+# B to C / C to B bond parameters
+BOND_TYPE	C	none
+WIGGLE_DIST	C	0.05
+ATTRACT_FORCE	C	False
+ATTR_E	C	0	
+TAIL_E	C	0
+REP_E	C	100.0
+REP_SIGMA	C	1.0
+ATTR_SIGMA	C	2.0
+TAIL_SIGMA	C	3.0
+@END	B
+
+@PARTICLE	C # Specs for particle of type B
+PARTICLE_MASS	1
+# C to C bond parameters
+BOND_TYPE	C	none
+WIGGLE_DIST	C	0.05
+ATTRACT_FORCE	C	False
+ATTR_E	C	0	
+TAIL_E	C	0
+REP_E	C	100.0
+REP_SIGMA	C	1.0
+ATTR_SIGMA	C	2.0
+TAIL_SIGMA	C	3.0
+@END	C

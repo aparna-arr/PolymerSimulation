@@ -13,7 +13,7 @@ from enum import Enum
 ## constants and enums ##
 PARAM_OPTS = {
 	'INTEGRATOR' : {'variablelangevin' : 1},
-	'BOND_TYPE' : {'harmonic' : 1},
+	'BOND_TYPE' : {'harmonic' : 1, 'none' : 2},
 	'REPULSE_FORCE' : {'grosberg' : 1},
 	'PLATFORM' : {'cuda' : 1, 'cpu' : 2}
 }
@@ -206,7 +206,7 @@ def read_in_sim_specs(filename):
 
 def read_in_polymer_xyz(filename):
 	if not os.path.isfile(filename):
-		raise UsageError("Polymer file [" + specsFile + "] does not exist!")
+		raise UsageError("Polymer file [" + filename + "] does not exist!")
 	# returns a Nx3 array of positions, 1 per particle
 	# returns a Nx1 array mapping each particle to a particle type
 	# final return data structure is a dictionary
@@ -297,12 +297,40 @@ def set_polymer_in_system(polymer, simSystem):
 	for i in range(len(polymer['mass'])):
 		simSystem.addParticle(polymer['mass'][i] * 100 * amu)
 
-def set_bond_pairs(forceConst):
+def set_bond_pairs(forceConst, params, polymer_types):
 	# NOTE assumes only ONE chain with linear particle-to-particle bonding!
-	for i in range(forceConst['polymerN'] - 1):
-		forceConst['bondPairs'].add((i,i+1))
+	nonbondStack = list()
+	prev_i = 0
 
-def generate_constant_dictionary(polymerLen, params):
+	#print(params['PARTICLE_TYPE_LIST'])
+
+	for i in range(1,forceConst['polymerN']):
+		blockKey = frozenset([polymer_types[prev_i],polymer_types[i]])
+	
+		#print("i is ", i)	
+		if (params['PARTICLES'][blockKey]['BOND_TYPE'] == PARAM_OPTS['BOND_TYPE']['none']):
+			foundIndex = -1
+
+			for j in range((len(nonbondStack) - 1), -1, -1):
+				#print("j is ",j)
+				#print("nonbondStack[j] is ", nonbondStack[j])	
+				blockKey2 = frozenset([polymer_types[nonbondStack[j]],polymer_types[i]])
+				
+				if (params['PARTICLES'][blockKey2]['BOND_TYPE'] != PARAM_OPTS['BOND_TYPE']['none']):
+					foundIndex = j
+					break
+
+			if foundIndex != -1:				
+				forceConst['bondPairs'].add((nonbondStack[foundIndex],i))
+				nonbondStack.pop(foundIndex)
+
+			nonbondStack.append(prev_i)
+		else:
+			forceConst['bondPairs'].add((prev_i,i))
+
+		prev_i = i
+
+def generate_constant_dictionary(polymerLen, params, polymer_types):
 	nm = meter * 1e-9
 	conlenScale = 1. # NOTE not sure what conlen is so leaving as constant for now
 	kB = BOLTZMANN_CONSTANT_kB * AVOGADRO_CONSTANT_NA
@@ -315,7 +343,7 @@ def generate_constant_dictionary(polymerLen, params):
 		'bondPairs' : set()  
 	}	
 
-	set_bond_pairs(forceConstants)
+	set_bond_pairs(forceConstants, params, polymer_types)
 
 	return forceConstants
 
@@ -419,15 +447,15 @@ def construct_attractive_functions(forceConst, polymer, params):
 		particleReverseMap[particleStr] = i 
 		particleIdentifyStr = particleIdentifyStr + '' + particleStr + ' = ' + str(particleIdx) + ';'
 	
-		print("particleIdentifyStr [" + str(i) + "] : [" + particleIdentifyStr + "]" )
+		#print("particleIdentifyStr [" + str(i) + "] : [" + particleIdentifyStr + "]" )
 	
 		particleIdentifyFunc[particleStr] = list()
 		particleIdentifyFunc[particleStr].append('(step(particleIdx1 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx1))')
 		particleIdentifyFunc[particleStr].append('(step(particleIdx2 - (' + particleStr + '- 0.1)) * step((' + particleStr + '+ 0.1) - particleIdx2))')
 	
-		print("particleStr: [" + particleStr + "]")
-		print("particleIdentifyFunc [" + str(i) + "][0] : [" + particleIdentifyFunc[particleStr][0] + "]" )
-		print("particleIdentifyFunc [" + str(i) + "][1] : [" + particleIdentifyFunc[particleStr][1] + "]" )
+		#print("particleStr: [" + particleStr + "]")
+		#print("particleIdentifyFunc [" + str(i) + "][0] : [" + particleIdentifyFunc[particleStr][0] + "]" )
+		#print("particleIdentifyFunc [" + str(i) + "][1] : [" + particleIdentifyFunc[particleStr][1] + "]" )
 		
 	# generate pair identification
 	particlePairIdentifyStr = ''
@@ -505,8 +533,8 @@ def construct_attractive_functions(forceConst, polymer, params):
 	mainFunctionStr += ';'
 	equationString = mainFunctionStr + functionStr + particleCondenseStr + particlePairIdentifyStr + particleIdentifyStr 
 
-	print("DEBUG: EQUATION STRING")
-	print(equationString)
+	#print("DEBUG: EQUATION STRING")
+	#print(equationString)
 		
 	attractForce = openmm.CustomNonbondedForce(equationString)
 	
@@ -524,8 +552,8 @@ def construct_attractive_functions(forceConst, polymer, params):
 		attrSigma = params['PARTICLES'][pair]['ATTR_SIGMA']
 		tailSigma = params['PARTICLES'][pair]['TAIL_SIGMA']
 
-		print("DEBUG: attrBool: [" + str(attrBool) + "]")
-		print("DEBUG: repSigma: [" + str(repSigma) + "]")
+		#print("DEBUG: attrBool: [" + str(attrBool) + "]")
+		#print("DEBUG: repSigma: [" + str(repSigma) + "]")
 
 		# FIXME continuation of dumb workaround
 		tailRGlobal = tailSigma
@@ -535,7 +563,7 @@ def construct_attractive_functions(forceConst, polymer, params):
 		attractForce.addGlobalParameter('REPe_' + pairSymmName, repE * forceConst['kT'])
 		attractForce.addGlobalParameter('REPsigma_' + pairSymmName, repSigma * forceConst['conlen'])
 
-		print("Adding param: [" + 'REPsigma_' + pairSymmName + "]")
+		#print("Adding param: [" + 'REPsigma_' + pairSymmName + "]")
 
 		attractForce.addGlobalParameter('ATTRe_' + pairSymmName, attrE * forceConst['kT'])
 		attractForce.addGlobalParameter('ATTRdelta_' + pairSymmName, forceConst['conlen'] * (attrSigma - repSigma) / 2.0)
@@ -570,7 +598,7 @@ def set_forces_in_system(polymer, params, simSystem):
 	# including polymer forces, bonds, external forces
 	# FIXME let user choose grosberg or attractive force
 
-	forceConst = generate_constant_dictionary(len(polymer['type']), params)
+	forceConst = generate_constant_dictionary(len(polymer['type']), params, polymer['type'])
 	forceList = list()
 
 	forceList.append(generate_confinement_force(forceConst, params))

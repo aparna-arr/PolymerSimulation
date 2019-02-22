@@ -1,0 +1,14 @@
+POLYMER_LEN	100
+DEFAULT_MARKER	A
+
+SAVE_PATH	/scratch/users/arrajpur/PolymerFreeUnits_50f_50p
+SAVE_FILENAME	polymer_50free_50polymer
+
+@DOMAIN
+DOMAIN_MARKER	C
+MARKER_PERC	.5
+DOMAIN_START	0
+DOMAIN_END	100
+@END
+
+

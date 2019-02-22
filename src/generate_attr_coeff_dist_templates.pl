@@ -88,7 +88,7 @@ for (my $i = 0; $i < @attr_coeffs; $i++) {
 #SBATCH --job-name=$output_prefix\_attre_$attr_coeffs[$i]
 #SBATCH --output=$output_prefix\_attre_$attr_coeffs[$i].%j.out
 #SBATCH --error=$output_prefix\_attre_$attr_coeffs[$i].%j.err
-#SBATCH --time=1-00:00:00
+#SBATCH --time=01:00:00
 #SBATCH -p gpu
 #SBATCH --gres gpu:1
 #SBATCH --nodes=1
@@ -105,7 +105,7 @@ module load cuda\n";
         	print TMP $paramlines[$idx];
         	close TMP;
 
-        	$curr_batch_template .= "simulate_polymer.py $templatenames[$idx]\n";
+        	$curr_batch_template .= "simulate_polymer_free_units.py $templatenames[$idx]\n";
 		$idx += 1;
 	}
 	print BAT $curr_batch_template;
