@@ -1,0 +1,12 @@
+#!/bin/bash
+#SBATCH --job-name=$INIT
+#SBATCH --output=$INIT.%j.out
+#SBATCH --error=$INIT.%j.err
+#SBATCH --time=$INIT
+#SBATCH -p gpu
+#SBATCH --gres gpu:1
+#SBATCH --nodes=1
+#SBATCH --mail-type=BEGIN,END,FAIL
+#SBATCH --mail-user=arrajpur@stanford.edu
+
+module load cuda
