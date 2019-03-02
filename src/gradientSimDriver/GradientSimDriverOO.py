@@ -308,7 +308,7 @@ class BatchTemplate(TemplateFile):
 		self.data['BATCH_STRING'] = self.data['BATCH_STRING'].replace('$INIT', jobName)
 
 	def generate_file(self, input_path):
-		command = '\nsimulate_polymer ' + input_path + '\n'
+		command = '\nsimulate_polymer.py ' + input_path + '\n'
 
 		batchStr = self.data['BATCH_STRING'] + command
 
