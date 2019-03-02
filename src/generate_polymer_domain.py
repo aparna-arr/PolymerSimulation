@@ -24,7 +24,7 @@ def read_input_file(infile):
 
 		paramAr = line.rstrip().split('\t')
 		#print("line is [" + line + "]")
-		paramKey = paramAr[0].split('#',1)[0].strip()
+		paramKey = paramAr[0]
 	
 		#print("paramKey is [" + paramKey + "]")	
 		if paramKey.startswith('@') or blockFlag == True:
@@ -33,7 +33,8 @@ def read_input_file(infile):
 				blockFlag = False
 				currBlockIdx = currBlockIdx + 1
 			elif blockFlag == True:
-				paramVal = paramAr[1].split('#',1)[0].strip()
+				#paramVal = paramAr[1].split('#',1)[0].strip()
+				paramVal = paramAr[1]
 				if paramKey in ["DOMAIN_MARKER"]:
 					params['DOMAIN_LIST'][currBlockIdx][paramKey] = paramVal
 				elif paramKey in ["MARKER_PERC"]:
@@ -77,7 +78,11 @@ def main():
 	polymer = polymerutils.create_spiral(r1=10, r2=13, N=polymer_len)
 	polymer = polymer.transpose()
 
-	filename = params['SAVE_PATH'] + "/" + params['SAVE_FILENAME'] + "_" + str(polymer_len) + "_domains.xyz";
+	filename = params['SAVE_PATH'] + "/" + params['SAVE_FILENAME']
+	con = open(params['SAVE_PATH'] + "/" + "contents.txt", "w")
+	con.write(filename)
+	con.close()
+
 	fh = open(filename, "w");
 
 	fh.write(str(len(polymer)))

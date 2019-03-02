@@ -1,0 +1,70 @@
+ENERGY_MIN_BOOL	<bool>
+ENERGY_MIN_TOL	<double>
+ENERGY_MIN_MAX_ITER	<int>
+
+NUM_BLOCKS	<int>
+STEPS_PER_BLOCK	<int>
+
+CENTER	<bool>
+CONFINEMENT_DENSITY	<double>
+CONFINEMENT_K	<int>
+
+STIFFNESS	<int>
+
+INTEGRATOR	<string>
+ERROR_TOL	<double>
+THERMOSTAT	<double>
+TEMPERATURE	<double>
+
+INPUT_POLYMER_FILE	<string>
+SAVE_PATH	<string>
+SAVE_FILENAME	<string>
+PLATFORM	<string>
+
+PARTICLE_TYPE_LIST	<string: comma-separated letter monomer markers>
+
+@PARTICLE	<char: monomer letter marker>
+PARTICLE_MASS	<double>
+BOND_TYPE	<char: monomer letter marker>	<string>
+WIGGLE_DIST	<char: monomer letter marker>	<double>
+ATTRACT_FORCE	<char: monomer letter marker>	<bool>
+ATTR_E	<char: monomer letter marker>	<double>
+TAIL_E	<char: monomer letter marker>	<double>
+REP_E	<char: monomer letter marker>	<double>
+REP_SIGMA	<char: monomer letter marker>	<double>
+ATTR_SIGMA	<char: monomer letter marker>	<double>
+TAIL_SIGMA	<char: monomer letter marker>	<double>
+
+BOND_TYPE	<char: monomer letter marker>	<string>
+WIGGLE_DIST	<char: monomer letter marker>	<double>
+ATTRACT_FORCE	<char: monomer letter marker>	<bool>
+ATTR_E	<char: monomer letter marker>	<double>
+TAIL_E	<char: monomer letter marker>	<double>
+REP_E	<char: monomer letter marker>	<double>
+REP_SIGMA	<char: monomer letter marker>	<double>
+ATTR_SIGMA	<char: monomer letter marker>	<double>
+TAIL_SIGMA	<char: monomer letter marker>	<double>
+@END
+
+@PARTICLE	<char: monomer letter marker>
+PARTICLE_MASS	<double>
+BOND_TYPE	<char: monomer letter marker>	<string>
+WIGGLE_DIST	<char: monomer letter marker>	<double>
+ATTRACT_FORCE	<char: monomer letter marker>	<bool>
+ATTR_E	<char: monomer letter marker>	<double>
+TAIL_E	<char: monomer letter marker>	<double>
+REP_E	<char: monomer letter marker>	<double>
+REP_SIGMA	<char: monomer letter marker>	<double>
+ATTR_SIGMA	<char: monomer letter marker>	<double>
+TAIL_SIGMA	<char: monomer letter marker>	<double>
+
+BOND_TYPE	<char: monomer letter marker>	<string>
+WIGGLE_DIST	<char: monomer letter marker>	<double>
+ATTRACT_FORCE	<char: monomer letter marker>	<bool>
+ATTR_E	<char: monomer letter marker>	<double>
+TAIL_E	<char: monomer letter marker>	<double>
+REP_E	<char: monomer letter marker>	<double>
+REP_SIGMA	<char: monomer letter marker>	<double>
+ATTR_SIGMA	<char: monomer letter marker>	<double>
+TAIL_SIGMA	<char: monomer letter marker>	<double>
+@END

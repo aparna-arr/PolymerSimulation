@@ -1,0 +1,12 @@
+REPS	<int>
+SAVE_JOBNAME	<string>
+SAVE_PATH	<string>
+
+GRADIENT_PARAM	<string>
+GRADIENT_START	<double>
+GRADIENT_END	<double>
+GRADIENT_POINTS	<int>
+
+POLYMER_TEMPLATE	<string>
+SIM_TEMPLATE	<string>
+BATCH_TEMPLATE	<string>

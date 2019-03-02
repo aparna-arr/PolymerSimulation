@@ -1,0 +1,19 @@
+POLYMER_LEN	<int: length>
+DEFAULT_MARKER	<char: default monomer letter>
+
+SAVE_PATH	<string: save path>
+SAVE_FILENAME	<string: filename>
+
+@DOMAIN
+DOMAIN_MARKER	<char: domain monomer letter>
+MARKER_PERC	<double: percentage of marker>
+DOMAIN_START	<int: index to start domain>
+DOMAIN_END	<int: index to end domain>
+@END
+
+@DOMAIN
+DOMAIN_MARKER	<char: domain monomer letter>
+MARKER_PERC	<double: percentage of marker>
+DOMAIN_START	<int: index to start domain>
+DOMAIN_END	<int: index to end domain>
+@END
