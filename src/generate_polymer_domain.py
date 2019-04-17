@@ -105,7 +105,10 @@ def main():
 				# turn to block letter depending on percent, use some modulo trick
 				if i % blockSpacer == 0:
 					letter = blockMarker
-		elif i in posToIdx:
+		#NOTE: THIS SHOULD NOT BE ELIF
+		# EVER
+		# BECAUSE IF IT IS, THEN YOU LOSE BLOCKS WHOSE STARTS OVERLAP WITH PREV BLOCK END VALUE
+		if i in posToIdx:
 			blockFlag = True
 			currDomainStart = i
 			# turn to block letter depending on percent, use some modulo trick
